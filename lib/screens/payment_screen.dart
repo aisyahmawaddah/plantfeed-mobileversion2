@@ -46,7 +46,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
     emailController.text = prefs.getString('email') ?? ''; // Load email
     nameController.text = prefs.getString('name') ?? '';   // Load name
   }
@@ -149,7 +149,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   },
                 );
 
-                // Proceed to make payment using the Stripe service
+                // Proceed to make payment using the Stripe 
+                // Facade usage: StripeService simplifies payment operations
                 try {
                   // Create the checkout session with the selected products
                   String? sessionId = await StripeService.instance.createCheckoutSession(

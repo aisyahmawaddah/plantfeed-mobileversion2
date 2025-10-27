@@ -22,6 +22,7 @@ import 'package:plant_feed/model/workshop_sharing_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:plant_feed/model/product_model.dart';
 import 'package:plant_feed/model/basket_item_model.dart';
+import 'package:plant_feed/model/plantlink_chart_model.dart';
 //import 'package:plant_feed/model/review_model.dart';
 //import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
@@ -37,6 +38,53 @@ class ApiService {
 
   User? get getUser => _user;
   set setUser(User user) => _user = user;
+
+
+   // Get user's PlantLink charts
+  Future<List<PlantLinkChartModel>> getUserCharts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$url/group/PlantLink-Graph-API'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = jsonDecode(response.body);
+        List<dynamic> chartsJson = data['charts'];
+        return chartsJson.map((json) => PlantLinkChartModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load charts: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching charts: $e');
+    }
+  }
+
+  // Share chart to group
+  Future<bool> shareChartToGroup(PlantLinkChartSharingModel chartSharing) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$url/group/PL-Sharing/${chartSharing.groupId}'),
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'title': chartSharing.title,
+          'description': chartSharing.description,
+          'chart': chartSharing.chartType == 'custom' ? 'Others' : chartSharing.link,
+          'customLink': chartSharing.chartType == 'custom' ? chartSharing.link : '',
+        },
+      );
+
+      return response.statusCode == 200 || response.statusCode == 302; // 302 for redirect
+    } catch (e) {
+      throw Exception('Error sharing chart: $e');
+    }
+  }
+      
+      
 
 //marketplace screen
   // Fetch products from marketplace

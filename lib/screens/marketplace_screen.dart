@@ -108,7 +108,7 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
     final userId = await getUserId();
     if (userId != null) {
       try {
-        // 1. Calls your existing "buyNow" endpoint (which now increments quantity if it exists)
+        // 1. Calls existing "buyNow" endpoint (which now increments quantity if it exists)
         await apiService.buyNow(userId, product.productId, 1);
 
         // 2. Refresh the basket count

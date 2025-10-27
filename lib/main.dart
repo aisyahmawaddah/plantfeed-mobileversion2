@@ -1,3 +1,4 @@
+import 'dart:io'; // Add this import
 import 'package:flutter/material.dart';
 import 'package:plant_feed/providers/user_model_provider.dart';
 import 'package:plant_feed/routing.dart';
@@ -5,15 +6,26 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Services/services.dart';
 import 'Services/consts.dart';
-import 'package:flutter_stripe/flutter_stripe.dart'; // Import the Stripe package
+import 'package:flutter_stripe/flutter_stripe.dart';
 
+// Add this class to bypass SSL verification
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Bypass SSL verification for development only
+  HttpOverrides.global = MyHttpOverrides();
+  
   // Set up Stripe with your public key
-  Stripe.publishableKey = stripePublicKey; // Your Stripe publishable key from consts.dart
-  Stripe.instance.applySettings(); // Apply settings after setting the publishable key
+  Stripe.publishableKey = stripePublicKey;
+  Stripe.instance.applySettings();
   
   runApp(const MyApp());
 }

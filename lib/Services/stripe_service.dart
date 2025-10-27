@@ -17,6 +17,7 @@ class StripeService {
 
   static final StripeService instance = StripeService._();
 
+  // Additional Facade methods
   Future<void> makePayment(String sessionId) async {
     try {
       // You might need to fetch the client secret to confirm the payment
@@ -87,6 +88,7 @@ class StripeService {
     return calculatedAmount.toString();
   }
 
+ // Facade method to create a checkout session
   Future<String?> createCheckoutSession(
       List<int> selectedProductIds, Map<String, String> shippingDetails) async {
     try {
@@ -121,6 +123,7 @@ class StripeService {
     }
   }
 
+ // Facade method to open checkout
   Future<bool> openCheckout(
     String sessionId, List<int> selectedProductIds) async {
   final prefs = await SharedPreferences.getInstance();
