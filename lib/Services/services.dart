@@ -44,7 +44,7 @@ class ApiService {
   Future<List<PlantLinkChartModel>> getUserCharts() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id') ?? '';
+    final userId = prefs.getInt('ID')?.toString() ?? '';
 
     final response = await http.get(
       Uri.parse('$url/group/PlantLink-Graph-API?user_id=$userId'),
@@ -71,7 +71,7 @@ class ApiService {
   Future<bool> shareChartToGroup(PlantLinkChartSharingModel model) async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('user_id') ?? '';
+    final userId = prefs.getInt('ID')?.toString() ?? '';
 
     final Map<String, dynamic> body = {
       'user_id': userId,
