@@ -64,17 +64,19 @@ class PlantLinkChartSharingModel {
   });
 
   factory PlantLinkChartSharingModel.fromJson(Map<String, dynamic> json) {
-    return PlantLinkChartSharingModel(
-      id: json['id'],
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      link: json['link'] ?? '',
-      chartType: json['chart_type'] ?? '',
-      groupId: json['Group_fk'],
-      userId: json['Person_fk'],
-      createdAt: DateTime.parse(json['created_at']),
-    );
-  }
+  return PlantLinkChartSharingModel(
+    id: json['id'] ?? 0,
+    title: json['title'] ?? '',
+    description: json['description'] ?? '',
+    link: json['link'] ?? '',
+    chartType: json['chart_type'] ?? '',
+    groupId: json['Group_fk'] ?? 0,
+    userId: json['user_id'] ?? json['Person_fk'] ?? 0,
+    createdAt: json['created_at'] != null
+        ? DateTime.parse(json['created_at'])
+        : DateTime.now(),
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {

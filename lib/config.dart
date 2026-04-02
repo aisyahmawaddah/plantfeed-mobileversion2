@@ -1,6 +1,6 @@
 // lib/config.dart
 class Config {
-  static const String apiUrl = 'https://4282-2a09-bac5-55ff-25cd-00-3c4-3b.ngrok-free.app';
+  static const String apiUrl = 'https://d30c-2a09-bac5-55fe-18d2-00-279-9c.ngrok-free.app';
 }
 
 // class Config {
