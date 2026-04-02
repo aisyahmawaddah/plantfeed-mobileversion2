@@ -48,20 +48,14 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.cyan,
-                    ),
+                    child: CircularProgressIndicator(color: Colors.cyan),
                   );
                 } else if (snapshot.hasError) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.error_outline,
-                          color: Colors.red,
-                          size: 64,
-                        ),
+                        const Icon(Icons.error_outline, color: Colors.red, size: 64),
                         const SizedBox(height: 16),
                         Text(
                           'Error loading charts: ${snapshot.error}',
@@ -77,31 +71,20 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.analytics_outlined,
-                            color: Colors.grey,
-                            size: 64,
-                          ),
+                          const Icon(Icons.analytics_outlined, color: Colors.grey, size: 64),
                           const SizedBox(height: 16),
                           const Text(
                             'No charts available',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey,
-                            ),
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
                           ),
                           const SizedBox(height: 8),
                           const Text(
                             'Create some charts in PlantLink first',
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
+                            style: TextStyle(color: Colors.grey),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
-                            onPressed: () {
-                              _showSharingDialog(context, null, true);
-                            },
+                            onPressed: () => _showSharingDialog(context, apiService, null, true),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.cyan,
                               foregroundColor: Colors.white,
@@ -114,19 +97,15 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                   } else {
                     return ListView.builder(
                       padding: const EdgeInsets.all(8.0),
-                      itemCount: snapshot.data!.length + 1, // +1 for "Others" option
+                      itemCount: snapshot.data!.length + 1,
                       itemBuilder: (context, index) {
                         if (index == snapshot.data!.length) {
-                          // "Others" option
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 4.0),
                             child: ListTile(
                               leading: const CircleAvatar(
                                 backgroundColor: Colors.orange,
-                                child: Icon(
-                                  Icons.link,
-                                  color: Colors.white,
-                                ),
+                                child: Icon(Icons.link, color: Colors.white),
                               ),
                               title: const Text(
                                 'Others (Custom Link)',
@@ -134,9 +113,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                               ),
                               subtitle: const Text('Share a custom chart link'),
                               trailing: const Icon(Icons.arrow_forward_ios),
-                              onTap: () {
-                                _showSharingDialog(context, null, true);
-                              },
+                              onTap: () => _showSharingDialog(context, apiService, null, true),
                             ),
                           );
                         } else {
@@ -146,10 +123,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: _getChartTypeColor(chart.chartType),
-                                child: Icon(
-                                  _getChartTypeIcon(chart.chartType),
-                                  color: Colors.white,
-                                ),
+                                child: Icon(_getChartTypeIcon(chart.chartType), color: Colors.white),
                               ),
                               title: Text(
                                 chart.name,
@@ -166,9 +140,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                                 ],
                               ),
                               trailing: const Icon(Icons.arrow_forward_ios),
-                              onTap: () {
-                                _showSharingDialog(context, chart, false);
-                              },
+                              onTap: () => _showSharingDialog(context, apiService, chart, false),
                             ),
                           );
                         }
@@ -176,9 +148,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                     );
                   }
                 } else {
-                  return const Center(
-                    child: Text('No data available'),
-                  );
+                  return const Center(child: Text('No data available'));
                 }
               },
             ),
@@ -190,31 +160,21 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
 
   Color _getChartTypeColor(String chartType) {
     switch (chartType.toLowerCase()) {
-      case 'line':
-        return Colors.blue;
-      case 'bar':
-        return Colors.green;
-      case 'pie':
-        return Colors.purple;
-      case 'scatter':
-        return Colors.orange;
-      default:
-        return Colors.cyan;
+      case 'line': return Colors.blue;
+      case 'bar': return Colors.green;
+      case 'pie': return Colors.purple;
+      case 'scatter': return Colors.orange;
+      default: return Colors.cyan;
     }
   }
 
   IconData _getChartTypeIcon(String chartType) {
     switch (chartType.toLowerCase()) {
-      case 'line':
-        return Icons.show_chart;
-      case 'bar':
-        return Icons.bar_chart;
-      case 'pie':
-        return Icons.pie_chart;
-      case 'scatter':
-        return Icons.scatter_plot;
-      default:
-        return Icons.analytics;
+      case 'line': return Icons.show_chart;
+      case 'bar': return Icons.bar_chart;
+      case 'pie': return Icons.pie_chart;
+      case 'scatter': return Icons.scatter_plot;
+      default: return Icons.analytics;
     }
   }
 
@@ -222,7 +182,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  void _showSharingDialog(BuildContext context, PlantLinkChartModel? chart, bool isCustomLink) {
+  void _showSharingDialog(BuildContext context, ApiService apiService, PlantLinkChartModel? chart, bool isCustomLink) {
     final titleController = TextEditingController(text: chart?.name ?? '');
     final descriptionController = TextEditingController();
     final customLinkController = TextEditingController();
@@ -261,12 +221,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Title is required';
-                  }
-                  if (value.trim().length > 100) {
-                    return 'Title cannot exceed 100 characters';
-                  }
+                  if (value == null || value.trim().isEmpty) return 'Title is required';
+                  if (value.trim().length > 100) return 'Title cannot exceed 100 characters';
                   return null;
                 },
               ),
@@ -280,12 +236,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                 ),
                 maxLines: 3,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Description is required';
-                  }
-                  if (value.trim().length > 500) {
-                    return 'Description cannot exceed 500 characters';
-                  }
+                  if (value == null || value.trim().isEmpty) return 'Description is required';
+                  if (value.trim().length > 500) return 'Description cannot exceed 500 characters';
                   return null;
                 },
               ),
@@ -299,9 +251,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Chart link is required';
-                    }
+                    if (value == null || value.trim().isEmpty) return 'Chart link is required';
                     return null;
                   },
                 ),
@@ -318,10 +268,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 try {
-                  ApiService apiService = Provider.of<ApiService>(context, listen: false);
-                  
                   PlantLinkChartSharingModel chartSharing = PlantLinkChartSharingModel(
-                    id: 0,
+                    id: isCustomLink ? 0 : (chart?.id ?? 0),
                     title: titleController.text.trim(),
                     description: descriptionController.text.trim(),
                     link: isCustomLink ? customLinkController.text.trim() : chart!.embedLink,
@@ -334,8 +282,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                   bool success = await apiService.shareChartToGroup(chartSharing);
 
                   if (success) {
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back to timeline
+                    Navigator.pop(context);
+                    Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Chart shared successfully!'),
@@ -352,10 +300,7 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                   }
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error: $e'),
-                      backgroundColor: Colors.red,
-                    ),
+                    SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
                   );
                 }
               }
