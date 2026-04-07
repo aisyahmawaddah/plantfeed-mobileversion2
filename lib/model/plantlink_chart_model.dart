@@ -72,11 +72,10 @@ class PlantLinkChartSharingModel {
     chartType: json['chart_type'] ?? '',
     groupId: json['Group_fk'] ?? 0,
     userId: json['user_id'] ?? json['Person_fk'] ?? 0,
-    createdAt: json['created_at'] != null
-        ? DateTime.parse(json['created_at'])
-        : DateTime.now(),
+    createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
   );
 }
+
 
   Map<String, dynamic> toJson() {
     return {

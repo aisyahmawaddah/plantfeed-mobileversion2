@@ -43,21 +43,14 @@ class ApiService {
    // Get user's PlantLink charts
   Future<List<PlantLinkChartModel>> getUserCharts() async {
   try {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('ID')?.toString() ?? '';
-
     final response = await http.get(
-      Uri.parse('$url/group/PlantLink-Graph-API?user_id=$userId'),
-      headers: {
-        'Content-Type': 'application/json',
-        // include your auth header here if you use one
-      },
+      Uri.parse('$url/group/PlantLink-Graph-API'),
+      headers: {'Content-Type': 'application/json'},
     );
-
     if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      final List charts = body['charts'] ?? [];
-      return charts.map((j) => PlantLinkChartModel.fromJson(j)).toList();
+      Map<String, dynamic> data = jsonDecode(response.body);
+      List<dynamic> chartsJson = data['charts'];
+      return chartsJson.map((json) => PlantLinkChartModel.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load charts: ${response.statusCode}');
     }
@@ -66,37 +59,28 @@ class ApiService {
   }
 }
 
-
   // Share chart to group
-  Future<bool> shareChartToGroup(PlantLinkChartSharingModel model) async {
+  Future<bool> shareChartToGroup(PlantLinkChartSharingModel chartSharing) async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('ID')?.toString() ?? '';
-
-    final Map<String, dynamic> body = {
-      'user_id': userId,
-      'title': model.title,
-      'description': model.description,
-    };
-
-    // If it's a real chart (has id), use chart_id; otherwise send custom_link
-    if (model.id != null && model.id! > 0) {
-      body['chart_id'] = model.id;
-    } else {
-      body['custom_link'] = model.link;
-    }
-
+    final userId = (prefs.getInt('ID') ?? 0).toString();
     final response = await http.post(
-      Uri.parse('$url/group/pl-sharing-api/${model.groupId}/'),
+      Uri.parse('$url/group/pl-sharing-api/${chartSharing.groupId}/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
+      body: jsonEncode({
+        'user_id': userId,
+        'title': chartSharing.title,
+        'description': chartSharing.description,
+        'link': chartSharing.link,
+        'chart_type': chartSharing.chartType,
+      }),
     );
-
-    return response.statusCode == 200;
+    return response.statusCode == 200 || response.statusCode == 201;
   } catch (e) {
     return false;
   }
 }
+
 
 Future<List<PlantLinkChartSharingModel>> getGroupCharts(int groupId) async {
   try {
@@ -104,15 +88,14 @@ Future<List<PlantLinkChartSharingModel>> getGroupCharts(int groupId) async {
       Uri.parse('$url/group/pl-sharing-api/$groupId/'),
       headers: {'Content-Type': 'application/json'},
     );
-
     if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((j) => PlantLinkChartSharingModel.fromJson(j)).toList();
+      List<dynamic> chartsJson = jsonDecode(response.body);
+      return chartsJson.map((json) => PlantLinkChartSharingModel.fromJson(json)).toList();
     } else {
-      throw Exception('Failed to load group charts: ${response.statusCode}');
+      return [];
     }
   } catch (e) {
-    throw Exception('Error fetching group charts: $e');
+    return [];
   }
 }
            

@@ -14,12 +14,10 @@ class PlantLinkChartViewerScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<PlantLinkChartViewerScreen> createState() =>
-      _PlantLinkChartViewerScreenState();
+  State<PlantLinkChartViewerScreen> createState() => _PlantLinkChartViewerScreenState();
 }
 
-class _PlantLinkChartViewerScreenState
-    extends State<PlantLinkChartViewerScreen> {
+class _PlantLinkChartViewerScreenState extends State<PlantLinkChartViewerScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
 
@@ -30,8 +28,23 @@ class _PlantLinkChartViewerScreenState
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (_) => setState(() => _isLoading = false),
-      ))
-      ..loadRequest(Uri.parse(widget.embedUrl));
+        onWebResourceError: (error) => debugPrint('WebView error: ${error.description}'),
+        onNavigationRequest: (request) {
+          debugPrint('Navigating to: ${request.url}');
+          return NavigationDecision.navigate;
+        },
+      ));
+
+      
+
+    if (widget.embedUrl.isNotEmpty) {
+      _controller.loadRequest(
+        Uri.parse(widget.embedUrl),
+        headers: {'ngrok-skip-browser-warning': 'true'},
+      );
+    } else {
+      _isLoading = false;
+    }
   }
 
   @override
@@ -46,19 +59,17 @@ class _PlantLinkChartViewerScreenState
         children: [
           if (widget.description.isNotEmpty)
             Container(
+              padding: const EdgeInsets.all(12),
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               color: Colors.cyan.shade50,
-              child: Text(widget.description,
-                  style: const TextStyle(fontSize: 14)),
+              child: Text(widget.description),
             ),
           Expanded(
             child: Stack(
               children: [
                 WebViewWidget(controller: _controller),
                 if (_isLoading)
-                  const Center(
-                      child: CircularProgressIndicator(color: Colors.cyan)),
+                  const Center(child: CircularProgressIndicator(color: Colors.cyan)),
               ],
             ),
           ),

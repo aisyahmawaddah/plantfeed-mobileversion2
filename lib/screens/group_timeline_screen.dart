@@ -6,8 +6,8 @@ import 'package:plant_feed/model/group_sharing_model.dart';
 import 'package:plant_feed/model/plantlink_chart_model.dart';
 import 'package:plant_feed/screens/add_new_timeline_form_popup.dart';
 import 'package:plant_feed/screens/chart_selection_screen.dart';
+import 'package:plant_feed/screens/plantlink_chart_viewer_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class GroupTimelineScreen extends StatefulWidget {
   final int groupId;
@@ -51,40 +51,45 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    showDialog(
-                      builder: (context) {
-                        return AddNewTimelineScreenPopup(groupId: widget.groupId);
-                      },
-                      context: context,
-                      barrierDismissible: false,
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add New Sharing'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
+                Flexible(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showDialog(
+                        builder: (context) {
+                          return AddNewTimelineScreenPopup(groupId: widget.groupId);
+                        },
+                        context: context,
+                        barrierDismissible: false,
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add New Sharing'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChartSelectionScreen(
-                          groupId: widget.groupId,
-                          groupName: widget.groupName,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChartSelectionScreen(
+                            groupId: widget.groupId,
+                            groupName: widget.groupName,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.analytics),
-                  label: const Text('Share PlantLink Chart'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan,
-                    foregroundColor: Colors.white,
+                      );
+                    },
+                    icon: const Icon(Icons.analytics),
+                    label: const Text('Share PlantLink Chart'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.cyan,
+                      foregroundColor: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -100,43 +105,36 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                 ]),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.green),
-                    );
+                    return const Center(child: CircularProgressIndicator(color: Colors.green));
                   }
                   if (snapshot.hasError) {
                     return Center(child: Text(snapshot.error.toString()));
                   }
-
                   final posts = snapshot.data![0] as List<GroupSharingModel>;
                   final charts = snapshot.data![1] as List<PlantLinkChartSharingModel>;
-
                   if (posts.isEmpty && charts.isEmpty) {
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: const [
-                        Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: Text('No posts yet')),
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(32),
+                            child: Text('No posts yet'),
+                          ),
                         ),
                       ],
                     );
                   }
-
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      ...posts.map((groupSharing) => _buildPostCard(groupSharing, apiService)),
+                      ...posts.map((post) => _buildPostCard(post, apiService)),
                       if (charts.isNotEmpty) ...[
                         const Padding(
                           padding: EdgeInsets.fromLTRB(12, 16, 12, 4),
                           child: Text(
                             'PlantLink Charts',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.cyan,
-                              fontSize: 16,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.cyan, fontSize: 16),
                           ),
                         ),
                         ...charts.map((chart) => _buildChartCard(chart)),
@@ -171,14 +169,14 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
       onTap: () {
         log(groupSharing.id.toString());
         Navigator.pushNamed(context, '/groupTimelineDetails', arguments: [
-          groupSharing.creatorName ?? '',
-          groupSharing.creatorUsername ?? '',
-          groupSharing.creatorPhoto ?? '',
-          groupSharing.createdAt ?? '',
-          groupSharing.groupTitle ?? '',
-          groupSharing.groupMessage ?? '',
-          groupSharing.groupPhoto ?? '',
-          groupSharing.id ?? '',
+          groupSharing.creatorName,
+          groupSharing.creatorUsername,
+          groupSharing.creatorPhoto,
+          groupSharing.createdAt,
+          groupSharing.groupTitle,
+          groupSharing.groupMessage,
+          groupSharing.groupPhoto,
+          groupSharing.id,
         ]);
       },
       child: Padding(
@@ -192,7 +190,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                 Row(
                   children: [
                     CircleAvatar(
-                      backgroundImage: (groupSharing.creatorPhoto != null && (groupSharing.creatorPhoto ?? "").isNotEmpty)
+                      backgroundImage: groupSharing.creatorPhoto.isNotEmpty
                           ? NetworkImage("${apiService.url}${groupSharing.creatorPhoto}")
                           : const AssetImage('assets/images/placeholder_image.png') as ImageProvider,
                       backgroundColor: Colors.transparent,
@@ -200,7 +198,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
                       child: Text(
-                        groupSharing.creatorName ?? '',
+                        groupSharing.creatorName,
                         style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
@@ -212,7 +210,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Text(
-                        "@${groupSharing.creatorUsername ?? ''}",
+                        "@${groupSharing.creatorUsername}",
                         style: const TextStyle(overflow: TextOverflow.ellipsis),
                       ),
                     ),
@@ -220,22 +218,22 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50),
-                  child: Text(groupSharing.createdAt ?? ''),
+                  child: Text(groupSharing.createdAt),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50),
                   child: Text(
-                    groupSharing.groupTitle ?? '',
+                    groupSharing.groupTitle,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50),
-                  child: Text(groupSharing.groupMessage ?? ''),
+                  child: Text(groupSharing.groupMessage),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 50),
-                  child: (groupSharing.groupPhoto != null && groupSharing.groupPhoto!.isNotEmpty)
+                  child: groupSharing.groupPhoto.isNotEmpty
                       ? SizedBox(
                           height: 250,
                           width: 250,
@@ -256,35 +254,61 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Card(
         elevation: 2,
-        child: ListTile(
-          leading: const CircleAvatar(
-            backgroundColor: Colors.cyan,
-            child: Icon(Icons.analytics, color: Colors.white),
-          ),
-          title: Text(
-            chart.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (chart.description.isNotEmpty)
-                Text(chart.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-              Text(
-                chart.chartType.toUpperCase(),
-                style: const TextStyle(color: Colors.cyan, fontSize: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.cyan,
+                child: Icon(Icons.analytics, color: Colors.white),
               ),
-            ],
-          ),
-          trailing: const Icon(Icons.open_in_new, color: Colors.cyan),
-          onTap: () async {
-            if (chart.link.isNotEmpty) {
-              final uri = Uri.parse(chart.link);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
-              }
-            }
-          },
+              title: Text(
+                chart.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (chart.description.isNotEmpty)
+                    Text(
+                      chart.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  Text(
+                    chart.chartType.toUpperCase(),
+                    style: const TextStyle(color: Colors.cyan, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlantLinkChartViewerScreen(
+                          embedUrl: chart.link,
+                          chartTitle: chart.title,
+                          description: chart.description,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.bar_chart),
+                  label: const Text('View Chart'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyan,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
