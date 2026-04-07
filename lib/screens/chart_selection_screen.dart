@@ -269,15 +269,15 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
               if (formKey.currentState!.validate()) {
                 try {
                   PlantLinkChartSharingModel chartSharing = PlantLinkChartSharingModel(
-                    id: isCustomLink ? 0 : (chart?.id ?? 0),
-                    title: titleController.text.trim(),
-                    description: descriptionController.text.trim(),
-                    link: isCustomLink ? customLinkController.text.trim() : chart!.embedLink,
-                    chartType: isCustomLink ? 'custom' : chart!.chartType,
-                    groupId: widget.groupId,
-                    userId: 0,
-                    createdAt: DateTime.now(),
-                  );
+                  id: isCustomLink ? 0 : (chart?.id ?? 0),  // was: id: 0
+                  title: titleController.text.trim(),
+                  description: descriptionController.text.trim(),
+                  link: isCustomLink ? customLinkController.text.trim() : chart!.embedLink,
+                  chartType: isCustomLink ? 'custom' : chart!.chartType,
+                  groupId: widget.groupId,
+                  userId: 0,
+                  createdAt: DateTime.now(),
+                );
 
                   bool success = await apiService.shareChartToGroup(chartSharing);
 
