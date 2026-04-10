@@ -19,17 +19,19 @@ class _AddNewTimelineScreenPopupState extends State<AddNewTimelineScreenPopup> {
   File? photo;
   TextEditingController titleController = TextEditingController();
   TextEditingController messageController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     ApiService apiService = Provider.of<ApiService>(context);
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    return ListView(
-      children: [
-        AlertDialog(
-          title: const Text('Share to the group'),
-          content: Form(
-            key: _formKey,
-            child: Wrap(children: [
+    return AlertDialog(
+      title: const Text('Share to the group'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
@@ -63,7 +65,7 @@ class _AddNewTimelineScreenPopupState extends State<AddNewTimelineScreenPopup> {
                   maxLines: 3,
                   validator: (value) {
                     if (value!.isEmpty) {
-                      return "Title is empty";
+                      return "Content is empty";
                     } else {
                       return null;
                     }
@@ -86,8 +88,11 @@ class _AddNewTimelineScreenPopupState extends State<AddNewTimelineScreenPopup> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-                  if (pickedFile != null) {
+                  final pickedFile = await ImagePicker().pickImage(
+                    source: ImageSource.gallery,
+                  );
+                  // ✅ check mounted before setState — widget may be gone after gallery returns
+                  if (pickedFile != null && mounted) {
                     setState(() {
                       photo = File(pickedFile.path);
                     });
@@ -99,70 +104,70 @@ class _AddNewTimelineScreenPopupState extends State<AddNewTimelineScreenPopup> {
                 ),
               ),
               if (photo != null)
-                Stack(
-                  children: [
-                    Container(
-                      color: Colors.red,
-                      width: 150,
-                      height: 150,
-                    ),
-                    Image.file(
-                      photo!,
-                      width: 300,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    ),
-                    Positioned(
-                      top: 5,
-                      right: 5,
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            photo = null;
-                          });
-                        },
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.red,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 18,
+                // ✅ give Stack a bounded size so layout doesn't crash
+                SizedBox(
+                  width: double.infinity,
+                  height: 200,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.file(
+                        photo!,
+                        fit: BoxFit.cover,
+                      ),
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              photo = null;
+                            });
+                          },
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                            ),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-            ]),
+            ],
           ),
-          actions: [
-            MaterialButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            MaterialButton(
-              onPressed: () async {
-                int userId = userProvider.getUser?.id ?? 1;
-                await apiService.addNewGroupSharing(
-                  titleController.text,
-                  messageController.text,
-                  userId,
-                  widget.groupId,
-                  photo,
-                );
-                if (!context.mounted) return;
-                Navigator.of(context).pop();
-              },
-              child: const Text('Save'),
-            )
-          ],
+        ),
+      ),
+      actions: [
+        MaterialButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        MaterialButton(
+          onPressed: () async {
+            if (!_formKey.currentState!.validate()) return;
+            int userId = userProvider.getUser?.id ?? 1;
+            await apiService.addNewGroupSharing(
+              titleController.text,
+              messageController.text,
+              userId,
+              widget.groupId,
+              photo,
+            );
+            if (!context.mounted) return;
+            Navigator.of(context).pop();
+          },
+          child: const Text('Save'),
         )
       ],
     );
