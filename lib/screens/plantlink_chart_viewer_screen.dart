@@ -35,8 +35,6 @@ class _PlantLinkChartViewerScreenState extends State<PlantLinkChartViewerScreen>
         },
       ));
 
-      
-
     if (widget.embedUrl.isNotEmpty) {
       _controller.loadRequest(
         Uri.parse(widget.embedUrl),
@@ -52,7 +50,7 @@ class _PlantLinkChartViewerScreenState extends State<PlantLinkChartViewerScreen>
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.chartTitle),
-        backgroundColor: Colors.cyan,
+        backgroundColor: Colors.green,
         foregroundColor: Colors.white,
       ),
       body: Column(
@@ -61,7 +59,7 @@ class _PlantLinkChartViewerScreenState extends State<PlantLinkChartViewerScreen>
             Container(
               padding: const EdgeInsets.all(12),
               width: double.infinity,
-              color: Colors.cyan.shade50,
+              color: Colors.green.shade50,
               child: Text(widget.description),
             ),
           Expanded(
@@ -69,7 +67,7 @@ class _PlantLinkChartViewerScreenState extends State<PlantLinkChartViewerScreen>
               children: [
                 WebViewWidget(controller: _controller),
                 if (_isLoading)
-                  const Center(child: CircularProgressIndicator(color: Colors.cyan)),
+                  const Center(child: CircularProgressIndicator(color: Colors.green)),
               ],
             ),
           ),

@@ -65,7 +65,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     icon: const Icon(Icons.add),
                     label: const Text('Add New Sharing'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -87,7 +87,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     icon: const Icon(Icons.analytics),
                     label: const Text('Share PlantLink Chart'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyan,
+                      backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -134,7 +134,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                           padding: EdgeInsets.fromLTRB(12, 16, 12, 4),
                           child: Text(
                             'PlantLink Charts',
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.cyan, fontSize: 16),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
                           ),
                         ),
                         ...charts.map((chart) => _buildChartCard(chart)),
@@ -146,20 +146,6 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        label: const Text('Create new post'),
-        backgroundColor: Colors.green,
-        onPressed: () {
-          showDialog(
-            builder: (context) {
-              return AddNewTimelineScreenPopup(groupId: widget.groupId);
-            },
-            context: context,
-            barrierDismissible: false,
-          );
-        },
-        icon: const Icon(Icons.add),
       ),
     );
   }
@@ -250,6 +236,11 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
   }
 
   Widget _buildChartCard(PlantLinkChartSharingModel chart) {
+    final knownChartTypes = ['ph', 'potassium', 'nitrogen', 'phosphorous', 'humidity', 'temperature', 'rainfall', 'Channel'];
+    final isPlantLinkChart = knownChartTypes.any(
+      (type) => chart.chartType.toLowerCase().contains(type.toLowerCase()),
+    ) || chart.link.contains('/mychannel/embed/');
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Card(
@@ -258,9 +249,12 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Colors.cyan,
-                child: Icon(Icons.analytics, color: Colors.white),
+              leading: CircleAvatar(
+                backgroundColor: isPlantLinkChart ? Colors.green : Colors.grey,
+                child: Icon(
+                  isPlantLinkChart ? Icons.analytics : Icons.link,
+                  color: Colors.white,
+                ),
               ),
               title: Text(
                 chart.title,
@@ -277,7 +271,10 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     ),
                   Text(
                     chart.chartType.toUpperCase(),
-                    style: const TextStyle(color: Colors.cyan, fontSize: 12),
+                    style: TextStyle(
+                      color: isPlantLinkChart ? Colors.green : Colors.grey,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -299,10 +296,10 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.bar_chart),
-                  label: const Text('View Chart'),
+                  icon: Icon(isPlantLinkChart ? Icons.bar_chart : Icons.open_in_new),
+                  label: Text(isPlantLinkChart ? 'View Chart' : 'Open Link'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyan,
+                    backgroundColor: isPlantLinkChart ? Colors.green : Colors.grey,
                     foregroundColor: Colors.white,
                   ),
                 ),
