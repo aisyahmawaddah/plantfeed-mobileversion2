@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PlantFeed",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "emulator-5556"
+    }
+  ]
+}
