@@ -42,11 +42,13 @@ class ApiService {
 
    // Get user's PlantLink charts
   Future<List<PlantLinkChartModel>> getUserCharts() async {
-  try {
-    final response = await http.get(
-      Uri.parse('$url/group/PlantLink-Graph-API'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = (prefs.getInt('ID') ?? 0).toString();
+      final response = await http.get(
+        Uri.parse('$url/group/PlantLink-Graph-API?user_id=$userId'),
+        headers: {'Content-Type': 'application/json'},
+      );
     if (response.statusCode == 200) {
       Map<String, dynamic> data = jsonDecode(response.body);
       List<dynamic> chartsJson = data['charts'];
