@@ -270,9 +270,14 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
-                            '${_formatDate(chart.startDate)} – ${_formatDate(chart.endDate)}',
+                            chart.isLive
+                                ? 'Live'
+                                : '${_formatDate(chart.startDate)} – ${_formatDate(chart.endDate)}',
                             style: TextStyle(
-                                fontSize: 12, color: Colors.grey[500]),
+                              fontSize: 12,
+                              color: chart.isLive ? Colors.green[600] : Colors.grey[500],
+                              fontWeight: chart.isLive ? FontWeight.w600 : FontWeight.normal,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -379,7 +384,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
     }
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime? date) {
+    if (date == null) return '—';
     return '${date.day}/${date.month}/${date.year}';
   }
 

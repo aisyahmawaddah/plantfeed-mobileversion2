@@ -3,28 +3,30 @@ class PlantLinkChartModel {
   final String name;
   final String embedLink;
   final String chartType;
-  final DateTime startDate;
-  final DateTime endDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
   final int userId;
+
+  bool get isLive => startDate == null;
 
   PlantLinkChartModel({
     required this.id,
     required this.name,
     required this.embedLink,
     required this.chartType,
-    required this.startDate,
-    required this.endDate,
+    this.startDate,
+    this.endDate,
     required this.userId,
   });
 
   factory PlantLinkChartModel.fromJson(Map<String, dynamic> json) {
     return PlantLinkChartModel(
       id: json['id'],
-      name: json['name'] ?? '',
-      embedLink: json['embed_link'] ?? '',
-      chartType: json['chart_type'] ?? '',
-      startDate: DateTime.parse(json['start_date']),
-      endDate: DateTime.parse(json['end_date']),
+      name: json['name'],
+      embedLink: json['embed_link'],
+      chartType: json['chart_type'],
+      startDate: json['start_date'] != null ? DateTime.parse(json['start_date']) : null,
+      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
       userId: json['user_id'],
     );
   }
@@ -35,13 +37,12 @@ class PlantLinkChartModel {
       'name': name,
       'embed_link': embedLink,
       'chart_type': chartType,
-      'start_date': startDate.toIso8601String(),
-      'end_date': endDate.toIso8601String(),
+      'start_date': startDate?.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
       'user_id': userId,
     };
   }
 }
-
 class PlantLinkChartSharingModel {
   final int id;
   final String title;

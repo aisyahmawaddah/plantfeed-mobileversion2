@@ -49,17 +49,18 @@ class ApiService {
         Uri.parse('$url/group/PlantLink-Graph-API?user_id=$userId'),
         headers: {'Content-Type': 'application/json'},
       );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> data = jsonDecode(response.body);
-      List<dynamic> chartsJson = data['charts'];
-      return chartsJson.map((json) => PlantLinkChartModel.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load charts: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        Map<String, dynamic> data = jsonDecode(response.body);
+        List<dynamic> chartsJson = data['charts'];
+        return chartsJson.map((json) => PlantLinkChartModel.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to load charts: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching charts: $e');
     }
-  } catch (e) {
-    throw Exception('Error fetching charts: $e');
   }
-}
+
 
   // Share chart to group
   Future<bool> shareChartToGroup(PlantLinkChartSharingModel chartSharing) async {
