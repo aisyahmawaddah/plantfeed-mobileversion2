@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+        continue-on-error: false
+
+      - name: Notify Jira on failure
+        if: failure()
+        run: |
+          curl -s -X POST "${{ secrets.JIRA_BASE_URL }}/rest/api/2/issue/" \
+            -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "fields": {
+                "project": {"key": "${{ secrets.JIRA_PROJECT_KEY }}"},
+                "summary": "CI Failure: ${{ github.repository }} on ${{ github.ref_name }} [${{ github.sha }}]",
+                "description": "Pipeline failed.\n\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nAuthor: ${{ github.actor }}\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "issuetype": {"name": "Bug"},
+                "priority": {"name": "High"}
+              }
+            }'
