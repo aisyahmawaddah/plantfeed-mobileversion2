@@ -1,6 +1,6 @@
 // lib/config.dart
 class Config {
-  static const String apiUrl = 'https://kourtney-bottlelike-earthly.ngrok-free.dev';
+  static const String apiUrl = 'http://plantfeed.xyz';
 }
 
 // class Config {
