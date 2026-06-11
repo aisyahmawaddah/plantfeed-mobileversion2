@@ -73,7 +73,7 @@ class BasketSummaryScreenState extends State<BasketSummaryScreen> {
           await removeBasketItem(
               id); // Direct removal if quantity is reduced to less than 1
         } else {
-          await apiService.removeFromBasket(id);
+          await apiService.removeBasketQuantity(id);
         }
       }
       refreshBasketSummary();
