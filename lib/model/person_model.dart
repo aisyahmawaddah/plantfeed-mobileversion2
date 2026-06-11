@@ -39,7 +39,7 @@ class Person {
 
   String get photoUrl {
     if (photo != null && photo!.isNotEmpty) {
-      return '${Config.apiUrl}/$photo'; 
+      return '${Config.apiUrl}$photo';
     } else {
       return 'https://www.w3schools.com/w3images/avatar2.png'; // Placeholder image URL
     }
