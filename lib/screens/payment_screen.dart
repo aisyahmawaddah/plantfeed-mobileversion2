@@ -38,7 +38,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData(); // Load user data, including full name and email
+    Future.microtask(() => _loadUserData());// Load user data, including full name and email
 
     // Initialize shipping data from widget
     sellerShippingFees = widget.sellerShippingFees;
