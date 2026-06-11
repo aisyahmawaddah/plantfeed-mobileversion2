@@ -853,20 +853,28 @@ Future<Map<String, dynamic>> fetchOrderHistory(int userId) async {
   }
 
   Future<List<MyPostModel>> getMyPost() async {
-    final prefs = await SharedPreferences.getInstance();
-    id = prefs.getInt('ID');
-    final res = await http.get(Uri.parse('$url/users/feed/$id'));
+  final prefs = await SharedPreferences.getInstance();
+  id = prefs.getInt('ID');
 
-    log(url);
-
-    if (res.statusCode == 200) {
-      List jsonResponse = json.decode(res.body);
-      return jsonResponse.map((e) => MyPostModel.fromJson(e)).toList();
-    } else {
-      log('API call failed with status code ${res.statusCode}');
-      throw Exception('Unexpected Error');
-    }
+  if (id == null) {
+    throw Exception('User not logged in. ID not found.');
   }
+
+  final fullUrl = '$url/users/feed/$id';
+  log('getMyPost URL: $fullUrl');
+
+  final res = await http.get(Uri.parse(fullUrl));
+
+  log('getMyPost status: ${res.statusCode}');
+  log('getMyPost body: ${res.body}');
+
+  if (res.statusCode == 200) {
+    List jsonResponse = json.decode(res.body);
+    return jsonResponse.map((e) => MyPostModel.fromJson(e)).toList();
+  } else {
+    throw Exception('Failed to load posts (${res.statusCode}): ${res.body}');
+  }
+}
 
   Future<List<AllPostModel>> getAllPost() async {
     final res = await http.get(Uri.parse('$url/users/feed/'));

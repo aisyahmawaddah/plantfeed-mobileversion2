@@ -479,10 +479,12 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty)
+                    if (value == null || value.trim().isEmpty) {
                       return 'Title is required';
-                    if (value.trim().length > 100)
+                    }
+                    if (value.trim().length > 100) {
                       return 'Title cannot exceed 100 characters';
+                    }
                     return null;
                   },
                 ),
@@ -502,10 +504,12 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                   ),
                   maxLines: 3,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty)
+                    if (value == null || value.trim().isEmpty) {
                       return 'Description is required';
-                    if (value.trim().length > 500)
+                    }
+                    if (value.trim().length > 500) {
                       return 'Description cannot exceed 500 characters';
+                    }
                     return null;
                   },
                 ),
@@ -527,8 +531,9 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.trim().isEmpty)
+                      if (value == null || value.trim().isEmpty) {
                         return 'Chart link is required';
+                      }
                       return null;
                     },
                   ),

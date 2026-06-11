@@ -56,7 +56,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
       return widget.product.productPhoto!;
     } else {
       // Otherwise, construct it using baseUrl
-      return '${baseUrl}${widget.product.productPhoto}';
+      return '$baseUrl${widget.product.productPhoto}';
     }
   }
 
