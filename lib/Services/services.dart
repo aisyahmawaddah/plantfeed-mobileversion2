@@ -490,6 +490,7 @@ Future<void> removeFromBasket(int id) async {
       },
       body: jsonEncode(<String, dynamic>{
         'item_id': itemId,  // Send the item ID to increment the quantity
+        'user_id': userId,
       }),
     );
 
@@ -519,6 +520,7 @@ Future<void> removeBasketQuantity(int itemId) async {
     },
     body: jsonEncode(<String, dynamic>{
       'item_id': itemId,  // Send the item ID to decrement the quantity
+      'user_id': userId,
     }),
   );
 
