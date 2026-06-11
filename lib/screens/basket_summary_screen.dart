@@ -35,12 +35,9 @@ class BasketSummaryScreenState extends State<BasketSummaryScreen> {
       if (!mounted) return;
       setState(() {
         _basketItems = items;
-        _totalPrice = _basketItems.fold(
-            0,
-            (total, item) =>
-                total + (item.productId.productPrice * item.productQty));
+        _totalPrice = 0.0;
         _selectedProducts = {
-          for (var item in items) item.id: false // Using basket item ID
+          for (var item in items) item.id: false
         };
       });
     } catch (error) {
@@ -226,8 +223,10 @@ class BasketSummaryScreenState extends State<BasketSummaryScreen> {
                                       false, // Check if selected
                                   onChanged: (bool? value) {
                                     setState(() {
-                                      _selectedProducts[item.id] =
-                                          value ?? false; // Update selection
+                                      _selectedProducts[item.id] = value ?? false;
+                                      _totalPrice = _basketItems
+                                          .where((i) => _selectedProducts[i.id] == true)
+                                          .fold(0.0, (sum, i) => sum + (i.productId.productPrice * i.productQty));
                                     });
                                   },
                                 ),
