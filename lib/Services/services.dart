@@ -106,7 +106,9 @@ Future<List<PlantLinkChartSharingModel>> getGroupCharts(int groupId) async {
 //marketplace screen
   // Fetch products from marketplace
   Future<List<Product>> fetchProducts() async {
-    final response = await http.get(Uri.parse('$url/marketplace/api/products/'));
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('ID');
+    final response = await http.get(Uri.parse('$url/marketplace/api/products/?user_id=$userId'));
 
     if (response.statusCode == 200) {
       List jsonResponse = json.decode(response.body);
