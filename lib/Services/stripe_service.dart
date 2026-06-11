@@ -174,26 +174,27 @@ class StripeService {
     }
   } catch (e) {
     logger.e("Payment failed: $e");
-    return false; // Indicate failure
-  }
+    rethrow;
+    }
 }
 
 
   Future<void> _notifyBackendPaymentSuccess(String sessionId) async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            '${Config.apiUrl}/payment/api/process-payment/?session_id=$sessionId'),
-      );
+  try {
+    final response = await http.get(
+      Uri.parse(
+          '${Config.apiUrl}/payment/api/process-payment/?session_id=$sessionId'),
+    );
 
-      if (response.statusCode == 200) {
-        logger.i("Backend updated successfully after payment.");
-      } else {
-        logger.e("Backend update failed: ${response.body}");
-        throw 'Failed to update backend after payment.';
-      }
-    } catch (e) {
-      logger.e("Error notifying backend: $e");
+    if (response.statusCode == 200) {
+      logger.i("Backend updated successfully after payment.");
+    } else {
+      logger.e("Backend update failed: ${response.body}");
+      throw 'Failed to update backend after payment.';
     }
+  } catch (e) {
+    logger.e("Error notifying backend: $e");
+    rethrow;
   }
+}
 }

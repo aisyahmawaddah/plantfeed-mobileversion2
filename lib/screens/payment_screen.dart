@@ -162,18 +162,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   );
 
                   if (sessionId != null) {
-                    bool paymentSuccess = await StripeService.instance
-                        .openCheckout(sessionId, widget.selectedProductIds); // Now returns bool
+                     try {
+                      bool paymentSuccess = await StripeService.instance
+                          .openCheckout(sessionId, widget.selectedProductIds);
 
-                    if (paymentSuccess) {
-                      // If payment succeeds, redirect to Order History
-                      Navigator.of(context).pop(); // Dismiss loading indicator
-                      _showSuccessDialogAndRedirect();
-                    } else {
-                      // Dismiss loading indicator
+                      if (paymentSuccess) {
+                        Navigator.of(context).pop();
+                        _showSuccessDialogAndRedirect();
+                      }
+                    } catch (e) {
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Payment was not successful.')),
+                        SnackBar(content: Text('Payment error: ${e.toString()}')),
                       );
                     }
                   } else {
