@@ -586,6 +586,56 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                   const BorderRadius.vertical(top: Radius.circular(12)),
             ),
           ),
+          // ADD THIS BLOCK:
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundImage: chart.posterPhoto.isNotEmpty
+                      ? NetworkImage('${apiService.url}${chart.posterPhoto}')
+                      : const AssetImage('assets/images/placeholder_image.png')
+                          as ImageProvider,
+                  backgroundColor: Colors.grey[200],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(chart.posterName,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 13),
+                          overflow: TextOverflow.ellipsis),
+                      Text('@${chart.posterUsername}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    ],
+                  ),
+                ),
+                if (chart.createdAt != null)
+                  Text(
+                    '${chart.createdAt!.day}/${chart.createdAt!.month}/${chart.createdAt!.year}',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Text('PlantLink Chart',
+                      style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ),
+
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

@@ -29,8 +29,12 @@ class PlantLinkChartModel {
       name: json['name'],
       embedLink: json['embed_link'],
       chartType: json['chart_type'],
-      startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+      startDate: json['start_date'] != null
+          ? DateTime.tryParse(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.tryParse(json['end_date'])
+          : null,
       userId: json['user_id'],
     );
   }
@@ -59,6 +63,9 @@ class PlantLinkChartSharingModel {
   final DateTime? createdAt;
   final DateTime? startDate;
   final DateTime? endDate;
+  final String posterName;
+  final String posterUsername;
+  final String posterPhoto;
 
   bool get isLive =>
       startDate != null &&
@@ -77,6 +84,9 @@ class PlantLinkChartSharingModel {
     this.createdAt,
     this.startDate,
     this.endDate,
+    this.posterName = '',
+    this.posterUsername = '',
+    this.posterPhoto = '',
   });
 
   factory PlantLinkChartSharingModel.fromJson(Map<String, dynamic> json) {
@@ -88,9 +98,18 @@ class PlantLinkChartSharingModel {
       chartType: json['chart_type'] ?? '',
       groupId: json['Group_fk'] ?? 0,
       userId: json['user_id'] ?? json['Person_fk'] ?? 0,
-      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
-      startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      startDate: json['start_date'] != null
+          ? DateTime.tryParse(json['start_date'])
+          : null,
+      endDate: json['end_date'] != null
+          ? DateTime.tryParse(json['end_date'])
+          : null,
+      posterName: json['name'] ?? '',
+      posterUsername: json['username'] ?? '',
+      posterPhoto: json['photo'] ?? '',
     );
   }
 
