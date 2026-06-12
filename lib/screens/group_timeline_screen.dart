@@ -95,7 +95,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
               builder: (context, snap) {
                 if (snap.connectionState == ConnectionState.waiting) {
                   return const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF4CAF50)));
+                      child: CircularProgressIndicator(
+                          color: Color(0xFF4CAF50)));
                 }
                 if (!snap.hasData || snap.data!.isEmpty) {
                   return const Center(child: Text('No members found'));
@@ -106,15 +107,17 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     final m = snap.data![i];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: (m.groupMemberPhoto.isNotEmpty)
-                            ? NetworkImage('${apiService.url}${m.groupMemberPhoto}')
+                        backgroundImage: m.photo.isNotEmpty
+                            ? NetworkImage(
+                                '${apiService.url}${m.photo}')
                             : const AssetImage(
                                     'assets/images/placeholder_image.png')
                                 as ImageProvider,
                       ),
-                      title: Text(m.groupMemberName,
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text('@${m.groupMemberUsername}'),
+                      title: Text(m.name,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600)),
+                      subtitle: Text('@${m.username}'),
                     );
                   },
                 );
@@ -126,8 +129,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
     );
   }
 
-  void _showChartCommentsSheet(
-      BuildContext context, ApiService apiService, PlantLinkChartSharingModel chart) {
+  void _showChartCommentsSheet(BuildContext context, ApiService apiService,
+      PlantLinkChartSharingModel chart) {
     final commentController = TextEditingController();
 
     showModalBottomSheet(
@@ -138,8 +141,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -172,8 +175,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                   builder: (context, snap) {
                     if (snap.connectionState == ConnectionState.waiting) {
                       return const Center(
-                          child:
-                              CircularProgressIndicator(color: Color(0xFF4CAF50)));
+                          child: CircularProgressIndicator(
+                              color: Color(0xFF4CAF50)));
                     }
                     if (!snap.hasData || snap.data!.isEmpty) {
                       return const Center(
@@ -272,8 +275,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
               backgroundImage: widget.groupPicture.isNotEmpty
                   ? NetworkImage(
                       '${apiService.url}/media/${widget.groupPicture}')
-                  : const AssetImage(
-                          'assets/images/placeholder_image.png')
+                  : const AssetImage('assets/images/placeholder_image.png')
                       as ImageProvider,
               backgroundColor: Colors.white24,
             ),
@@ -404,16 +406,14 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
 
                   return ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding:
-                        const EdgeInsets.only(top: 8, bottom: 16),
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
                     itemCount: feed.length,
                     itemBuilder: (context, index) {
                       final item = feed[index];
                       if (item.type == 'post') {
                         return _buildPostCard(item.post!, apiService);
                       } else {
-                        return _buildChartCard(
-                            item.chart!, apiService);
+                        return _buildChartCard(item.chart!, apiService);
                       }
                     },
                   );
@@ -426,13 +426,11 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
     );
   }
 
-  Widget _buildPostCard(
-      GroupSharingModel post, ApiService apiService) {
+  Widget _buildPostCard(GroupSharingModel post, ApiService apiService) {
     return GestureDetector(
       onTap: () {
         log(post.id.toString());
-        Navigator.pushNamed(
-            context, '/groupTimelineDetails', arguments: [
+        Navigator.pushNamed(context, '/groupTimelineDetails', arguments: [
           post.creatorName,
           post.creatorUsername,
           post.creatorPhoto,
@@ -480,20 +478,18 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                       children: [
                         Text(post.creatorName,
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
+                                fontWeight: FontWeight.bold, fontSize: 13),
                             overflow: TextOverflow.ellipsis),
                         Text('@${post.creatorUsername}',
                             style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600])),
+                                fontSize: 12, color: Colors.grey[600])),
                       ],
                     ),
                   ),
                   Text(
                     post.createdAt,
-                    style: TextStyle(
-                        fontSize: 11, color: Colors.grey[500]),
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -509,7 +505,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 post.groupMessage,
-                style: TextStyle(fontSize: 13, color: Colors.grey[800]),
+                style:
+                    TextStyle(fontSize: 13, color: Colors.grey[800]),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -531,8 +528,8 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
               ),
             Container(
               decoration: BoxDecoration(
-                border: Border(
-                    top: BorderSide(color: Colors.grey[200]!)),
+                border:
+                    Border(top: BorderSide(color: Colors.grey[200]!)),
               ),
               padding: const EdgeInsets.symmetric(
                   horizontal: 12, vertical: 8),
@@ -562,9 +559,9 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
       'ph', 'potassium', 'nitrogen', 'phosphorous', 'humidity',
       'temperature', 'rainfall', 'channel'
     ];
-    final isPlantLinkChart = knownTypes.any((t) =>
-            chart.chartType.toLowerCase().contains(t)) ||
-        chart.link.contains('/mychannel/embed/');
+    final isPlantLinkChart =
+        knownTypes.any((t) => chart.chartType.toLowerCase().contains(t)) ||
+            chart.link.contains('/mychannel/embed/');
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -599,8 +596,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                       : Colors.grey[100],
                   child: Icon(
                     isPlantLinkChart ? Icons.analytics : Icons.link,
-                    color:
-                        isPlantLinkChart ? Colors.green : Colors.grey,
+                    color: isPlantLinkChart ? Colors.green : Colors.grey,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -610,8 +606,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     children: [
                       Text(chart.title,
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14)),
+                              fontWeight: FontWeight.bold, fontSize: 14)),
                       if (chart.description.isNotEmpty)
                         Text(
                           chart.description,
@@ -650,8 +645,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                                   horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.green[100],
-                                borderRadius:
-                                    BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text('Live',
                                   style: TextStyle(
@@ -684,8 +678,7 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              PlantLinkChartViewerScreen(
+                          builder: (context) => PlantLinkChartViewerScreen(
                             embedUrl: chart.link,
                             chartTitle: chart.title,
                             description: chart.description,
@@ -698,13 +691,11 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                             ? Icons.bar_chart
                             : Icons.open_in_new,
                         size: 16),
-                    label: Text(isPlantLinkChart
-                        ? 'View Chart'
-                        : 'Open Link'),
+                    label: Text(
+                        isPlantLinkChart ? 'View Chart' : 'Open Link'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isPlantLinkChart
-                          ? Colors.green
-                          : Colors.grey[600],
+                      backgroundColor:
+                          isPlantLinkChart ? Colors.green : Colors.grey[600],
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
