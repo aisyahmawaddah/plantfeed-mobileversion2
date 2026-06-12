@@ -309,11 +309,12 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (context) => AddNewTimelineScreenPopup(
-                            groupId: widget.groupId),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AddNewTimelineScreenPopup(groupId: widget.groupId),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.edit, size: 16),
