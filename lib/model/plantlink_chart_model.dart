@@ -7,7 +7,11 @@ class PlantLinkChartModel {
   final DateTime? endDate;
   final int userId;
 
-  bool get isLive => startDate == null;
+  bool get isLive =>
+      startDate != null &&
+      endDate != null &&
+      startDate!.year == 2000 &&
+      endDate!.year == 2099;
 
   PlantLinkChartModel({
     required this.id,
@@ -25,8 +29,8 @@ class PlantLinkChartModel {
       name: json['name'],
       embedLink: json['embed_link'],
       chartType: json['chart_type'],
-      startDate: json['start_date'] != null ? DateTime.parse(json['start_date']) : null,
-      endDate: json['end_date'] != null ? DateTime.parse(json['end_date']) : null,
+      startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
+      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
       userId: json['user_id'],
     );
   }
@@ -43,6 +47,7 @@ class PlantLinkChartModel {
     };
   }
 }
+
 class PlantLinkChartSharingModel {
   final int id;
   final String title;
@@ -51,7 +56,15 @@ class PlantLinkChartSharingModel {
   final String chartType;
   final int groupId;
   final int userId;
-  final DateTime createdAt;
+  final DateTime? createdAt;
+  final DateTime? startDate;
+  final DateTime? endDate;
+
+  bool get isLive =>
+      startDate != null &&
+      endDate != null &&
+      startDate!.year == 2000 &&
+      endDate!.year == 2099;
 
   PlantLinkChartSharingModel({
     required this.id,
@@ -61,22 +74,25 @@ class PlantLinkChartSharingModel {
     required this.chartType,
     required this.groupId,
     required this.userId,
-    required this.createdAt,
+    this.createdAt,
+    this.startDate,
+    this.endDate,
   });
 
   factory PlantLinkChartSharingModel.fromJson(Map<String, dynamic> json) {
-  return PlantLinkChartSharingModel(
-    id: json['id'] ?? 0,
-    title: json['title'] ?? '',
-    description: json['description'] ?? '',
-    link: json['link'] ?? '',
-    chartType: json['chart_type'] ?? '',
-    groupId: json['Group_fk'] ?? 0,
-    userId: json['user_id'] ?? json['Person_fk'] ?? 0,
-    createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
-  );
-}
-
+    return PlantLinkChartSharingModel(
+      id: json['id'] ?? 0,
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      link: json['link'] ?? '',
+      chartType: json['chart_type'] ?? '',
+      groupId: json['Group_fk'] ?? 0,
+      userId: json['user_id'] ?? json['Person_fk'] ?? 0,
+      createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
+      startDate: json['start_date'] != null ? DateTime.tryParse(json['start_date']) : null,
+      endDate: json['end_date'] != null ? DateTime.tryParse(json['end_date']) : null,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -86,6 +102,8 @@ class PlantLinkChartSharingModel {
       'chart_type': chartType,
       'Group_fk': groupId,
       'Person_fk': userId,
+      'start_date': startDate?.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
     };
   }
 }
