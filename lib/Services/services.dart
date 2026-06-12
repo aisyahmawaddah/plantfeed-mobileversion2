@@ -27,6 +27,7 @@ import 'package:plant_feed/model/plantlink_chart_model.dart';
 //import 'dart:developer' as dev;
 import 'package:flutter/foundation.dart';
 import 'package:plant_feed/config.dart'; // Import the configuration file
+import 'package:plant_feed/model/chart_comment_model.dart';
 
 class ApiService {
   final String url = Config.apiUrl;
@@ -76,6 +77,8 @@ class ApiService {
         'description': chartSharing.description,
         'link': chartSharing.link,
         'chart_type': chartSharing.chartType,
+        'start_date': chartSharing.startDate?.toIso8601String(),
+        'end_date': chartSharing.endDate?.toIso8601String(),
       }),
     );
     return response.statusCode == 200 || response.statusCode == 201;
@@ -101,7 +104,39 @@ Future<List<PlantLinkChartSharingModel>> getGroupCharts(int groupId) async {
     return [];
   }
 }
-           
+
+Future<List<ChartCommentModel>> getChartComments(int chartSharingId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$url/group/pl-chart-comment-api/$chartSharingId/'),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      List<dynamic> data = jsonDecode(response.body);
+      return data.map((json) => ChartCommentModel.fromJson(json)).toList();
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
+}
+
+Future<bool> postChartComment(
+    int chartSharingId, String message, int userId) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$url/group/pl-chart-comment-api/$chartSharingId/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'user_id': userId,
+        'message': message,
+      }),
+    );
+    return response.statusCode == 201;
+  } catch (e) {
+    return false;
+  }
+}   
 
 //marketplace screen
   // Fetch products from marketplace
