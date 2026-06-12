@@ -109,8 +109,8 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                           Text(
                             '${snapshot.error}',
                             textAlign: TextAlign.center,
-                            style:
-                                TextStyle(color: Colors.grey[500], fontSize: 13),
+                            style: TextStyle(
+                                color: Colors.grey[500], fontSize: 13),
                           ),
                         ],
                       ),
@@ -169,23 +169,35 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                       ),
                     );
                   } else {
-                    final charts =
+                    final allCharts =
                         List<PlantLinkChartModel>.from(snapshot.data!);
-                    charts.sort((a, b) => _sortNewestFirst
+                    allCharts.sort((a, b) => _sortNewestFirst
                         ? b.id.compareTo(a.id)
                         : a.id.compareTo(b.id));
 
-                    return ListView.builder(
+                    final sensorCharts = allCharts
+                        .where((c) => c.chartType.toLowerCase() != 'channel')
+                        .toList();
+                    final channelCharts = allCharts
+                        .where((c) => c.chartType.toLowerCase() == 'channel')
+                        .toList();
+
+                    return ListView(
                       padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                      itemCount: charts.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == charts.length) {
-                          return _buildCustomLinkCard(context, apiService);
-                        } else {
-                          return _buildChartCard(
-                              context, apiService, charts[index]);
-                        }
-                      },
+                      children: [
+                        if (sensorCharts.isNotEmpty) ...[
+                          _buildSectionHeader('Sensor Charts', Icons.sensors),
+                          ...sensorCharts.map(
+                              (c) => _buildChartCard(context, apiService, c)),
+                        ],
+                        if (channelCharts.isNotEmpty) ...[
+                          _buildSectionHeader(
+                              'Channel Charts', Icons.device_hub),
+                          ...channelCharts.map(
+                              (c) => _buildChartCard(context, apiService, c)),
+                        ],
+                        _buildCustomLinkCard(context, apiService),
+                      ],
                     );
                   }
                 } else {
@@ -194,6 +206,29 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[700]),
+          const SizedBox(width: 6),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Divider(thickness: 1, color: Colors.grey[300])),
         ],
       ),
     );
@@ -275,8 +310,12 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                                 : '${_formatDate(chart.startDate)} – ${_formatDate(chart.endDate)}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: chart.isLive ? Colors.green[600] : Colors.grey[500],
-                              fontWeight: chart.isLive ? FontWeight.w600 : FontWeight.normal,
+                              color: chart.isLive
+                                  ? Colors.green[600]
+                                  : Colors.grey[500],
+                              fontWeight: chart.isLive
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -356,14 +395,26 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
 
   Color _getChartTypeColor(String chartType) {
     switch (chartType.toLowerCase()) {
-      case 'line':
-        return const Color(0xFF4CAF50);
-      case 'bar':
-        return const Color(0xFF388E3C);
-      case 'pie':
-        return const Color(0xFF66BB6A);
-      case 'scatter':
-        return const Color(0xFF81C784);
+      case 'humidity':
+      case 'humiditychart':
+        return Colors.blue;
+      case 'ph':
+      case 'phchart':
+        return Colors.orange;
+      case 'temperature':
+        return Colors.red;
+      case 'channel':
+        return Colors.purple;
+      case 'potassium':
+        return const Color(0xFF795548);
+      case 'rainfall':
+        return Colors.indigo;
+      case 'nitrogen':
+      case 'nitrogenchart':
+        return Colors.teal;
+      case 'phosphorous':
+      case 'phosphorouschart':
+        return Colors.deepOrange;
       default:
         return const Color(0xFF4CAF50);
     }
@@ -371,14 +422,26 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
 
   IconData _getChartTypeIcon(String chartType) {
     switch (chartType.toLowerCase()) {
-      case 'line':
-        return Icons.show_chart;
-      case 'bar':
-        return Icons.bar_chart;
-      case 'pie':
-        return Icons.pie_chart;
-      case 'scatter':
-        return Icons.scatter_plot;
+      case 'humidity':
+      case 'humiditychart':
+        return Icons.water_drop;
+      case 'ph':
+      case 'phchart':
+        return Icons.science;
+      case 'temperature':
+        return Icons.thermostat;
+      case 'channel':
+        return Icons.device_hub;
+      case 'potassium':
+        return Icons.grass;
+      case 'rainfall':
+        return Icons.umbrella;
+      case 'nitrogen':
+      case 'nitrogenchart':
+        return Icons.eco;
+      case 'phosphorous':
+      case 'phosphorouschart':
+        return Icons.bubble_chart;
       default:
         return Icons.analytics;
     }
@@ -575,6 +638,12 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                                 groupId: widget.groupId,
                                 userId: 0,
                                 createdAt: DateTime.now(),
+                                startDate: isCustomLink
+                                    ? null
+                                    : chart?.startDate,
+                                endDate: isCustomLink
+                                    ? null
+                                    : chart?.endDate,
                               );
 
                               bool success = await apiService
