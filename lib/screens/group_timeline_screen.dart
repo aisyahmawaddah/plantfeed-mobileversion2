@@ -627,7 +627,10 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.green),
                   ),
-                  child: Text('PlantLink Chart',
+                  child: Text(
+                      chart.chartType.toLowerCase() == 'channel'
+                          ? 'PlantLink Channel'
+                          : 'PlantLink Chart',
                       style: TextStyle(
                           fontSize: 10,
                           color: Colors.green[700],
@@ -742,8 +745,11 @@ class _GroupTimelineScreenState extends State<GroupTimelineScreen> {
                             ? Icons.bar_chart
                             : Icons.open_in_new,
                         size: 16),
-                    label: Text(
-                        isPlantLinkChart ? 'View Chart' : 'Open Link'),
+                    label: Text(isPlantLinkChart
+                        ? (chart.chartType.toLowerCase() == 'channel'
+                            ? 'View Channel'
+                            : 'View Chart')
+                        : 'Open Link'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           isPlantLinkChart ? Colors.green : Colors.grey[600],
