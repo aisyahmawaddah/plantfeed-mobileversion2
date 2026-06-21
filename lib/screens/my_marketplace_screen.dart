@@ -264,8 +264,15 @@ class _MyMarketplaceScreenState extends State<MyMarketplaceScreen> {
         } else if (snapshot.data == null || snapshot.data!.isEmpty) {
           return const Center(child: Text('No products found.'));
         } else {
-          return ListView.builder(
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             itemCount: snapshot.data!.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              childAspectRatio: 0.6,
+            ),
             itemBuilder: (context, index) {
               final product = snapshot.data![index];
               return ProductCard(
@@ -304,16 +311,16 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Image
-          SizedBox(
-            height: 120, // Reduced height for smaller display
-            width: double.infinity,
+          // Product Image (square)
+          AspectRatio(
+            aspectRatio: 1,
             child: ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(10)),
               child: Image.network(
                 product.productPhoto ?? '',
                 fit: BoxFit.cover,
+                width: double.infinity,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[200],

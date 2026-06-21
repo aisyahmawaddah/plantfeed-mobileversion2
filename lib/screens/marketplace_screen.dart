@@ -5,7 +5,6 @@ import 'package:plant_feed/Services/services.dart';
 import 'package:plant_feed/model/product_model.dart';
 import 'package:plant_feed/screens/basket_summary_screen.dart';
 import 'package:plant_feed/screens/order_history_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:plant_feed/screens/my_marketplace_screen.dart';
 import 'package:plant_feed/screens/view_product_screen.dart';
@@ -265,8 +264,15 @@ class MarketplaceTab extends StatelessWidget {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
           final products = snapshot.data ?? [];
-          return ListView.builder(
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             itemCount: products.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              childAspectRatio: 0.57,
+            ),
             itemBuilder: (context, index) {
               final product = products[index];
               return ProductCard(
@@ -298,139 +304,132 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 3,
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.all(4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Seller info row
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: NetworkImage(product.seller.photoUrl),
-                  radius: 20,
-                  backgroundColor: Colors.transparent,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  product.seller.username,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product Photo (square)
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ViewProductScreen(
+                    productId: product.productId,
                   ),
                 ),
-              ],
+              );
+            },
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(8)),
+                child: Image.network(
+                  product.productPhoto ?? '',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.broken_image, size: 40),
+                    );
+                  },
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ViewProductScreen(
-                      productId: product.productId,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Seller info row
+                Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(product.seller.photoUrl),
+                      radius: 10,
+                      backgroundColor: Colors.transparent,
                     ),
-                  ),
-                );
-              },
-              child: Text(
-                product.productName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: Colors.black,
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        product.seller.username,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Product Photo
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                product.productPhoto ?? '',
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    height: 150,
-                    child: const Icon(Icons.broken_image, size: 50),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Price, Stock
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+                const SizedBox(height: 4),
+                Text(
+                  product.productName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.black,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
                 Text(
                   'RM ${product.productPrice.toStringAsFixed(2)}',
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.green,
                   ),
                 ),
                 Text(
-                  '${product.productStock} in stock',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  '${product.productStock} in stock · ${product.productSold} sold',
+                  style: const TextStyle(fontSize: 10, color: Colors.grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            // Sold
-            Text(
-              '${product.productSold} sold',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            // Add to Basket & Buy Now
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                OutlinedButton(
-                  onPressed: () => addToBasket(product),
-                  style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => addToBasket(product),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Icon(Icons.add_shopping_cart, size: 16),
+                      ),
                     ),
-                  ),
-                  child: const Text('Add to basket'),
-                ),
-                ElevatedButton(
-                  onPressed: () => buyNow(product),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => buyNow(product),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Buy', style: TextStyle(fontSize: 12)),
+                      ),
                     ),
-                  ),
-                  child: const Text('Buy now'),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            // Time Posted
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                const Icon(Icons.access_time, size: 14, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(
-                  DateFormat.yMMMMd().add_jm().format(product.timePosted),
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
