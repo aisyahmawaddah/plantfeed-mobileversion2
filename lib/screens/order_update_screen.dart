@@ -102,7 +102,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         : widget.order.products.fold(
             0.0,
             (sum, product) =>
-                sum + (product.productPrice * product.productStock),
+                sum + (product.productPrice * (product.productQty ?? product.productStock)),
           );
 
     return Scaffold(
@@ -262,7 +262,7 @@ Widget _buildProductCard(Product product) {
             const SizedBox(height: 6),
             Text('Category: ${product.productCategory}'),
             Text('Price: RM${product.productPrice.toStringAsFixed(2)}'),
-            Text('Quantity: ${product.productStock}'),
+            Text('Quantity: ${product.productQty ?? product.productStock}'),
           ],
         ),
       ),

@@ -13,6 +13,7 @@ class Product {
   final String productCategory;
   final double productPrice;
   final int productStock;
+  final int? productQty;  
   final String? productPhoto;
   final int productRating;
   final int productSold;
@@ -30,6 +31,7 @@ class Product {
     required this.productCategory,
     required this.productPrice,
     required this.productStock,
+    this.productQty,
     this.productPhoto,
     required this.productRating,
     required this.productSold,
@@ -53,6 +55,7 @@ class Product {
               '0.0') ??
           0.0,
       productStock: json['productStock'] ?? json['stock'] ?? 0,
+      productQty: json['productQty'] ?? json['productqty'], 
       productPhoto: json['productPhoto'] != null
           ? '${Config.apiUrl}${json['productPhoto'] ?? json['photo']}'
           : null,
