@@ -485,7 +485,11 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      isCustomLink ? 'Share Custom Link' : 'Share Chart',
+                      isCustomLink
+                          ? 'Share Custom Link'
+                          : (chart?.chartType.toLowerCase() == 'channel'
+                              ? 'Share Channel'
+                              : 'Share Chart'),
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,
@@ -652,11 +656,16 @@ class _ChartSelectionScreenState extends State<ChartSelectionScreen> {
                               if (success) {
                                 Navigator.pop(context);
                                 Navigator.pop(context);
+                                final isChannel = chartSharing.chartType
+                                        .toLowerCase() ==
+                                    'channel';
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Chart shared successfully!'),
-                                    backgroundColor: Color(0xFF4CAF50),
+                                  SnackBar(
+                                    content: Text(isChannel
+                                        ? 'Channel shared successfully!'
+                                        : 'Chart shared successfully!'),
+                                    backgroundColor:
+                                        const Color(0xFF4CAF50),
                                   ),
                                 );
                               } else {
