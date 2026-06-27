@@ -36,24 +36,18 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     'Sapling',
     'Fertiliser',
     'Tool',
+    'Plant',
     'Others',
   ];
 
   String? _selectedCategory;
 
-  String get baseUrl {
-    return _productService.url.endsWith('/')
-        ? _productService.url
-        : '${_productService.url}/';
-  }
-
   String get fullImageUrl {
     if (widget.product.productPhoto != null &&
         widget.product.productPhoto!.startsWith('http')) {
       return widget.product.productPhoto!;
-    } else {
-      return '$baseUrl${widget.product.productPhoto}';
     }
+    return '${_productService.url}${widget.product.productPhoto}';
   }
 
   @override
@@ -61,11 +55,13 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     super.initState();
     _nameController.text = widget.product.productName;
     _descController.text = widget.product.productDesc;
-    _selectedCategory = widget.product.productCategory;
 
-    if (!_categories.contains(_selectedCategory)) {
-      _selectedCategory = 'None Selected';
-    }
+    _selectedCategory = widget.product.productCategory;
+    // Normalize old mismatched category names
+    if (_selectedCategory == 'Tools') _selectedCategory = 'Tool';
+    if (_selectedCategory == 'Fertilizer') _selectedCategory = 'Fertiliser';
+    if (!_categories.contains(_selectedCategory)) _selectedCategory = 'None Selected';
+
     _priceController.text = widget.product.productPrice.toStringAsFixed(2);
     _stockController.text = widget.product.productStock.toString();
   }
@@ -89,8 +85,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
       if (isDuplicate && productName != widget.product.productName) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text(
-                  "Product name already exists. Please choose a different name.")),
+              content: Text("Product name already exists. Please choose a different name.")),
         );
         return;
       }
@@ -139,18 +134,15 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Edit Product Details",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor),
-                ),
+                const Text("Edit Product Details",
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor)),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _nameController,
-                  decoration:
-                      const InputDecoration(labelText: "Product Name"),
+                  decoration: const InputDecoration(labelText: "Product Name"),
                   onChanged: _checkNameDuplicate,
                   validator: (value) => value == null || value.isEmpty
                       ? "Please enter a product name"
@@ -185,9 +177,10 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     labelText: "Category",
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) => value == null || value == 'None Selected'
-                      ? "Please select a category"
-                      : null,
+                  validator: (value) =>
+                      value == null || value == 'None Selected'
+                          ? "Please select a category"
+                          : null,
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
@@ -216,13 +209,11 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                       : null,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  "Attach Photo",
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor),
-                ),
+                const Text("Attach Photo",
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor)),
                 const SizedBox(height: 10),
                 OutlinedButton(
                   onPressed: _pickImage,
@@ -234,23 +225,19 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     padding: const EdgeInsets.symmetric(
                         vertical: 8, horizontal: 16),
                   ),
-                  child: const Text(
-                    "Choose Photo",
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("Choose Photo",
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 16),
                 Center(
                   child: Column(
                     children: [
-                      const Text(
-                        "Current Photo",
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor),
-                      ),
+                      const Text("Current Photo",
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor)),
                       const SizedBox(height: 10),
                       _buildImagePreview(),
                     ],
@@ -316,7 +303,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
         height: 200,
         width: 200,
         child: _selectedImage != null
-            ? Image.file(_selectedImage!, height: 200, width: 200, fit: BoxFit.cover)
+            ? Image.file(_selectedImage!,
+                height: 200, width: 200, fit: BoxFit.cover)
             : (widget.product.productPhoto != null &&
                     widget.product.productPhoto!.isNotEmpty
                 ? Image.network(
@@ -326,7 +314,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, size: 50, color: Colors.red),
+                      child: const Icon(Icons.broken_image,
+                          size: 50, color: Colors.red),
                     ),
                   )
                 : Container(

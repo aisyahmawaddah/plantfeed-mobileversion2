@@ -1,3 +1,5 @@
+//add product screen
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:plant_feed/Services/services.dart';
@@ -110,7 +112,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   value: _selectedCategory,
                   items: <String>[
                     "None Selected", "Fruit", "Seed", "Pest Control",
-                    "Sapling", "Fertiliser", "Tool", "Others"
+                    "Sapling", "Fertiliser", "Tool", "Plant", "Others"
                   ].map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
