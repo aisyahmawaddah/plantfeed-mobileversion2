@@ -247,25 +247,56 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 Widget _buildProductCard(Product product) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(product.productName,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 6),
-            Text('Category: ${product.productCategory}'),
-            Text('Price: RM${product.productPrice.toStringAsFixed(2)}'),
-            Text('Quantity: ${product.productQty ?? product.productStock}'),
-          ],
-        ),
+  return Card(
+    margin: const EdgeInsets.symmetric(vertical: 10),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    elevation: 3,
+    child: Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: product.productPhoto != null && product.productPhoto!.isNotEmpty
+                ? Image.network(
+                    product.productPhoto!,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _productImagePlaceholder(),
+                  )
+                : _productImagePlaceholder(),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(product.productName,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text('Category: ${product.productCategory}'),
+                Text('Price: RM${product.productPrice.toStringAsFixed(2)}'),
+                Text('Quantity: ${product.productQty ?? product.productStock}'),
+              ],
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+Widget _productImagePlaceholder() {
+  return Container(
+    width: 72,
+    height: 72,
+    decoration: BoxDecoration(
+      color: Colors.grey[200],
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 32),
+  );
+}
 }
