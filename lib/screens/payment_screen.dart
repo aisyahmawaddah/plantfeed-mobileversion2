@@ -163,8 +163,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
                   if (sessionId != null) {
                      try {
-                      bool paymentSuccess = await StripeService.instance
-                          .openCheckout(sessionId, widget.selectedProductIds);
+                      bool paymentSuccess = await StripeService.instance.openCheckout(
+                        sessionId,
+                        widget.selectedProductIds,
+                        nameController.text.trim(),    
+                        addressController.text.trim(), 
+                      );
 
                       if (paymentSuccess) {
                         Navigator.of(context).pop();

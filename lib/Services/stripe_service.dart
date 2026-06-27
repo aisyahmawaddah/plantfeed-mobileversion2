@@ -1,26 +1,23 @@
 // ignore_for_file: unused_element, avoid_print
 
-import 'dart:convert'; // Import for JSON encoding
-import 'package:dio/dio.dart'; // Use Dio for HTTP requests
-import 'package:flutter_stripe/flutter_stripe.dart'; // Stripe package
-import 'package:plant_feed/Services/consts.dart'; // Your constants
-import 'package:plant_feed/config.dart'; // Your API configuration
-import 'package:http/http.dart' as http; // For HTTP requests
-import 'package:logger/logger.dart'; // For logging
+import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:plant_feed/Services/consts.dart';
+import 'package:plant_feed/config.dart';
+import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class StripeService {
-  // Logger instance for logging messages
   static final Logger logger = Logger();
 
   StripeService._();
 
   static final StripeService instance = StripeService._();
 
-  // Additional Facade methods
   Future<void> makePayment(String sessionId) async {
     try {
-      // You might need to fetch the client secret to confirm the payment
       String? paymentIntentClientSecret =
           await _retrievePaymentIntentClientSecret(sessionId);
       if (paymentIntentClientSecret != null) {
@@ -30,7 +27,6 @@ class StripeService {
             merchantDisplayName: "Your Merchant Name",
           ),
         );
-
         await Stripe.instance.presentPaymentSheet();
       } else {
         logger.e("Failed to retrieve payment intent client secret");
@@ -42,8 +38,7 @@ class StripeService {
   }
 
   Future<String?> _retrievePaymentIntentClientSecret(String sessionId) async {
-    // Implement the logic to retrieve the payment intent client secret
-    return "your_payment_intent_client_secret"; // Placeholder
+    return "your_payment_intent_client_secret";
   }
 
   Future<String?> _createPaymentIntent(int amount, String currency) async {
@@ -84,11 +79,10 @@ class StripeService {
   }
 
   String _calculateAmount(int amount) {
-    final calculatedAmount = amount * 100; // Convert to cents
+    final calculatedAmount = amount * 100;
     return calculatedAmount.toString();
   }
 
- // Facade method to create a checkout session
   Future<String?> createCheckoutSession(
       List<int> selectedProductIds, Map<String, String> shippingDetails) async {
     try {
@@ -100,7 +94,7 @@ class StripeService {
 
       final requestBody = {
         'selected_products': selectedProductIds,
-        'shipping_details': shippingDetails, // Add the shipping details
+        'shipping_details': shippingDetails,
       };
 
       final response = await http.post(
@@ -112,7 +106,7 @@ class StripeService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        return data['id']; // Return the Stripe session ID
+        return data['id'];
       } else {
         logger.e('Error response: ${response.body}');
         throw Exception('Failed to create checkout session.');
@@ -123,78 +117,82 @@ class StripeService {
     }
   }
 
- // Facade method to open checkout
+  // ✦ CHANGED: now accepts name and address to forward to the backend
   Future<bool> openCheckout(
-    String sessionId, List<int> selectedProductIds) async {
-  final prefs = await SharedPreferences.getInstance();
-  int? userId = prefs.getInt('ID'); // Retrieve user ID from SharedPreferences
+      String sessionId,
+      List<int> selectedProductIds,
+      String name,        // ← new
+      String address,     // ← new
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt('ID');
 
-  if (userId == null) {
-    throw Exception('User not logged in.');
-  }
+    if (userId == null) {
+      throw Exception('User not logged in.');
+    }
 
-  try {
-    // Create a Payment Intent and retrieve the client secret and total amount from backend
-    final response = await http.post(
-      Uri.parse(
-          '${Config.apiUrl}/payment/api/create-payment-intent/?user_id=$userId'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'selected_products': selectedProductIds}),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      String paymentIntentClientSecret = data['client_secret'];
-      // Cast total_amount to int safely
-      int totalAmountCents = (data['total_amount'] as num).toInt(); // Line 170 fix
-
-      // Log for debugging
-      print('Total Amount (cents): $totalAmountCents');
-
-      // Initialize Stripe Payment Sheet
-      await Stripe.instance.initPaymentSheet(
-        paymentSheetParameters: SetupPaymentSheetParameters(
-          paymentIntentClientSecret: paymentIntentClientSecret,
-          merchantDisplayName: "Aisyah M",
-        ),
+    try {
+      final response = await http.post(
+        Uri.parse(
+            '${Config.apiUrl}/payment/api/create-payment-intent/?user_id=$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'selected_products': selectedProductIds}),
       );
 
-      // Present the payment sheet
-      await Stripe.instance.presentPaymentSheet();
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        String paymentIntentClientSecret = data['client_secret'];
+        int totalAmountCents = (data['total_amount'] as num).toInt();
 
-      // If payment succeeds, call backend to process the payment
-      await _notifyBackendPaymentSuccess(sessionId);
+        print('Total Amount (cents): $totalAmountCents');
 
-      // Provide success feedback to user
-      logger.i('Payment successful');
-      return true; // Indicate success
-    } else {
-      logger.e('Error creating payment intent: ${response.body}');
-      return false; // Indicate failure
+        await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+            paymentIntentClientSecret: paymentIntentClientSecret,
+            merchantDisplayName: "Aisyah M",
+          ),
+        );
+
+        await Stripe.instance.presentPaymentSheet();
+
+        // ✦ CHANGED: pass name and address to backend
+        await _notifyBackendPaymentSuccess(sessionId, name, address);
+
+        logger.i('Payment successful');
+        return true;
+      } else {
+        logger.e('Error creating payment intent: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      logger.e("Payment failed: $e");
+      rethrow;
     }
-  } catch (e) {
-    logger.e("Payment failed: $e");
-    rethrow;
-    }
-}
-
-
-  Future<void> _notifyBackendPaymentSuccess(String sessionId) async {
-  try {
-    final response = await http.get(
-      Uri.parse(
-          '${Config.apiUrl}/payment/api/process-payment/?session_id=$sessionId'),
-    );
-
-    if (response.statusCode == 200) {
-      logger.i("Backend updated successfully after payment.");
-    } else {
-      logger.e("Backend update failed: ${response.body}");
-      throw 'Failed to update backend after payment.';
-    }
-  } catch (e) {
-    logger.e("Error notifying backend: $e");
-    rethrow;
   }
-}
+
+  // ✦ CHANGED: now sends name and address as POST body
+  Future<void> _notifyBackendPaymentSuccess(
+      String sessionId, String name, String address) async {
+    try {
+      final response = await http.post(         // ← changed GET → POST
+        Uri.parse(
+            '${Config.apiUrl}/payment/api/process-payment/?session_id=$sessionId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({                       // ← new body
+          'name': name,
+          'address': address,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        logger.i("Backend updated successfully after payment.");
+      } else {
+        logger.e("Backend update failed: ${response.body}");
+        throw 'Failed to update backend after payment.';
+      }
+    } catch (e) {
+      logger.e("Error notifying backend: $e");
+      rethrow;
+    }
+  }
 }
