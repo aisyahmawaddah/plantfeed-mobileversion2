@@ -2,16 +2,15 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart'; // Uncommented
 import 'package:plant_feed/Services/services.dart';
 import 'package:plant_feed/model/product_model.dart';
 
 class UpdateProductScreen extends StatefulWidget {
   final Product product;
 
-  const UpdateProductScreen({Key? key, required this.product})
-      : super(key: key);
+  const UpdateProductScreen({Key? key, required this.product}) : super(key: key);
 
   @override
   _UpdateProductScreenState createState() => _UpdateProductScreenState();
@@ -34,28 +33,25 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     'Fruit',
     'Seed',
     'Pest Control',
+    'Sapling',
     'Fertiliser',
-    'Tools',
-    'Others'
+    'Tool',
+    'Others',
   ];
 
   String? _selectedCategory;
 
-  // Getter for baseUrl
   String get baseUrl {
     return _productService.url.endsWith('/')
         ? _productService.url
         : '${_productService.url}/';
   }
 
-  // Getter for fullImageUrl
   String get fullImageUrl {
     if (widget.product.productPhoto != null &&
         widget.product.productPhoto!.startsWith('http')) {
-      // If productPhoto is already a full URL
       return widget.product.productPhoto!;
     } else {
-      // Otherwise, construct it using baseUrl
       return '$baseUrl${widget.product.productPhoto}';
     }
   }
@@ -66,24 +62,18 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     _nameController.text = widget.product.productName;
     _descController.text = widget.product.productDesc;
     _selectedCategory = widget.product.productCategory;
-    print("Selected Category: $_selectedCategory"); // Debugging line
 
     if (!_categories.contains(_selectedCategory)) {
-      _selectedCategory = 'None Selected'; // Default to a safe value
+      _selectedCategory = 'None Selected';
     }
-    _priceController.text = widget.product.productPrice.toString();
+    _priceController.text = widget.product.productPrice.toStringAsFixed(2);
     _stockController.text = widget.product.productStock.toString();
-
-    // Debugging: Print the full image URL
-    print("Full Image URL: $fullImageUrl");
   }
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      setState(() {
-        _selectedImage = File(pickedFile.path);
-      });
+      setState(() => _selectedImage = File(pickedFile.path));
     }
   }
 
@@ -98,7 +88,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
       if (isDuplicate && productName != widget.product.productName) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
               content: Text(
                   "Product name already exists. Please choose a different name.")),
         );
@@ -121,12 +111,12 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Product updated successfully")),
+          const SnackBar(content: Text("Product updated successfully")),
         );
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to update product")),
+          const SnackBar(content: Text("Failed to update product")),
         );
       }
     }
@@ -134,12 +124,11 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor =
-        Colors.green; // Match MyMarketplace_screen colors
+    const primaryColor = Colors.green;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Update Product"),
+        title: const Text("Update Product"),
         backgroundColor: primaryColor,
       ),
       body: Padding(
@@ -150,45 +139,37 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "Edit Product Details",
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
-                  ),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: "Product Name"),
-                  onChanged: (value) {
-                    _checkNameDuplicate(value);
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter a product name";
-                    }
-                    return null;
-                  },
+                  decoration:
+                      const InputDecoration(labelText: "Product Name"),
+                  onChanged: _checkNameDuplicate,
+                  validator: (value) => value == null || value.isEmpty
+                      ? "Please enter a product name"
+                      : null,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextFormField(
                   controller: _descController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: "Product Description",
                     border: OutlineInputBorder(),
                   ),
-                  minLines: 3, // Minimum height for the text area
-                  maxLines: 5, // Maximum expandable height
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter a product description";
-                    }
-                    return null;
-                  },
+                  minLines: 3,
+                  maxLines: 5,
+                  validator: (value) => value == null || value.isEmpty
+                      ? "Please enter a product description"
+                      : null,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: _selectedCategory,
                   items: _categories.map((String category) {
@@ -198,115 +179,108 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     );
                   }).toList(),
                   onChanged: (newValue) {
-                    setState(() {
-                      _selectedCategory = newValue!;
-                    });
+                    setState(() => _selectedCategory = newValue!);
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: "Category",
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) {
-                    if (value == null || value == 'None Selected') {
-                      return "Please select a category";
-                    }
-                    return null;
-                  },
+                  validator: (value) => value == null || value == 'None Selected'
+                      ? "Please select a category"
+                      : null,
                 ),
-                SizedBox(height: 10),
-                _buildTextField("Product Price", _priceController, true,
-                    keyboardType: TextInputType.number),
-                SizedBox(height: 10),
-                _buildTextField("Stock Available", _stockController, true,
-                    keyboardType: TextInputType.number),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _priceController,
+                  decoration: const InputDecoration(
+                    labelText: "Product Price",
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [BankPriceFormatter()],
+                  validator: (value) =>
+                      value == null || value.isEmpty || value == '0.00'
+                          ? "Please enter Product Price"
+                          : null,
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _stockController,
+                  decoration: const InputDecoration(
+                    labelText: "Stock Available",
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) => value == null || value.isEmpty
+                      ? "Please enter Stock Available"
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                const Text(
                   "Attach Photo",
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  onPressed: _pickImage,
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.black),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8, horizontal: 16),
+                  ),
+                  child: const Text(
+                    "Choose Photo",
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
-                SizedBox(height: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    OutlinedButton(
-                      onPressed: _pickImage,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white, // White background
-                        side: BorderSide(color: Colors.black), // Black border
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              8), // Optional rounded corners
-                        ),
-                        padding: EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 16), // Adjust padding
-                      ),
-                      child: Text(
-                        "Choose Photo",
+                const SizedBox(height: 16),
+                Center(
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Current Photo",
                         style: TextStyle(
-                          color: Colors.black, // Black text color
-                          fontWeight: FontWeight.bold,
-                        ),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor),
                       ),
-                    ),
-                    SizedBox(height: 16),
-                    Center(
-                      // Center the "Current Photo" label and image
-                      child: Column(
-                        children: [
-                          Text(
-                            "Current Photo",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          _buildImagePreview(), // Center the larger image preview
-                        ],
-                      ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      _buildImagePreview(),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _updateProduct,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
-                    minimumSize: Size(double.infinity,
-                        50), // Make button width fill the page and height 50
+                    minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(8), // Optional rounded corners
-                    ),
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: Text(
-                    "Update",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("Update",
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey),
-                    minimumSize: Size(double.infinity,
-                        50), // Make button width fill the page and height 50
+                    side: const BorderSide(color: Colors.grey),
+                    minimumSize: const Size(double.infinity, 50),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(8), // Optional rounded corners
-                    ),
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: Text(
-                    "Return to Shop",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  child: const Text("Return to Shop",
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
@@ -316,42 +290,15 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     );
   }
 
-  Widget _buildTextField(
-      String label, TextEditingController controller, bool isRequired,
-      {TextInputType keyboardType = TextInputType.text}) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-      ),
-      keyboardType: keyboardType,
-      validator: isRequired
-          ? (value) {
-              if (value == null || value.isEmpty) {
-                return "Please enter $label";
-              }
-              return null;
-            }
-          : null,
-      onChanged: (value) {
-        if (label == "Product Name") {
-          _checkNameDuplicate(value);
-        }
-      },
-    );
-  }
-
   Future<void> _checkNameDuplicate(String value) async {
     try {
       final isDuplicate = await _productService.isProductNameDuplicate(
         value,
         widget.product.productId,
       );
-
       if (isDuplicate && value != widget.product.productName) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text("Product name is already taken."),
             backgroundColor: Colors.red,
           ),
@@ -364,35 +311,23 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
   Widget _buildImagePreview() {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(10), // Rounded corners
+      borderRadius: BorderRadius.circular(10),
       child: SizedBox(
-        height: 200, // Fixed height
-        width: 200, // Fixed width
+        height: 200,
+        width: 200,
         child: _selectedImage != null
-            ? Image.file(
-                _selectedImage!,
-                height: 200,
-                width: 200,
-                fit: BoxFit.cover,
-              )
+            ? Image.file(_selectedImage!, height: 200, width: 200, fit: BoxFit.cover)
             : (widget.product.productPhoto != null &&
                     widget.product.productPhoto!.isNotEmpty
-                ? CachedNetworkImage(
-                    imageUrl: fullImageUrl,
+                ? Image.network(
+                    fullImageUrl,
                     height: 200,
                     width: 200,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => Center(
-                      child: CircularProgressIndicator(),
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 50, color: Colors.red),
                     ),
-                    errorWidget: (context, url, error) {
-                      print("Error loading image: $error"); // Debugging line
-                      return Container(
-                        color: Colors.grey[300],
-                        child:
-                            Icon(Icons.broken_image, size: 50, color: Colors.red),
-                      );
-                    },
                   )
                 : Container(
                     height: 200,
@@ -401,6 +336,32 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     child: const Center(child: Text("No Image")),
                   )),
       ),
+    );
+  }
+}
+
+class BankPriceFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.isEmpty) {
+      return const TextEditingValue(
+        text: '0.00',
+        selection: TextSelection.collapsed(offset: 4),
+      );
+    }
+    digits = digits.replaceAll(RegExp(r'^0+'), '');
+    if (digits.isEmpty) digits = '0';
+    while (digits.length < 3) digits = '0$digits';
+    String intPart = digits.substring(0, digits.length - 2);
+    String decPart = digits.substring(digits.length - 2);
+    intPart = intPart.replaceAll(RegExp(r'^0+'), '');
+    if (intPart.isEmpty) intPart = '0';
+    String result = '$intPart.$decPart';
+    return TextEditingValue(
+      text: result,
+      selection: TextSelection.collapsed(offset: result.length),
     );
   }
 }
