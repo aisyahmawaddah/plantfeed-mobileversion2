@@ -1,5 +1,3 @@
-// lib/screens/marketplace_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:plant_feed/Services/services.dart';
 import 'package:plant_feed/model/product_model.dart';
@@ -22,22 +20,16 @@ class MarketplaceScreen extends StatefulWidget {
 class MarketplaceScreenState extends State<MarketplaceScreen> {
   late Future<List<Product>> futureProducts;
   final ApiService apiService = ApiService();
-  int basketCount = 0; // Will display how many distinct items are in the basket
+  int basketCount = 0;
 
   @override
   void initState() {
     super.initState();
-    // Fetch products for the marketplace
     futureProducts = apiService.fetchProducts();
-
-    // Optionally load from SharedPreferences on startup (if you want to persist)
     loadBasketItems();
-
-    // Or do an initial refresh from the backend to get the correct basket count
     refreshBasketCount();
   }
 
-  // (Optional) Load basketCount from SharedPreferences
   Future<void> loadBasketItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -45,21 +37,18 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
     });
   }
 
-  // (Optional) Save basketCount to SharedPreferences
   Future<void> saveBasketState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('basketCount', basketCount);
   }
 
-  // This method calls your basket_summary endpoint via fetchBasketSummary()
   Future<void> refreshBasketCount() async {
     try {
-      // Returns a list of basket items
       final basketList = await apiService.fetchBasketSummary();
       setState(() {
-        basketCount = basketList.length; // distinct items in the basket
+        basketCount = basketList.length;
       });
-      await saveBasketState(); // (Optional) persist in SharedPreferences
+      await saveBasketState();
     } catch (e) {
       debugPrint('Error refreshing basket count: $e');
     }
@@ -70,17 +59,12 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
     return prefs.getInt('ID');
   }
 
-  // Add an item to the basket, then refresh the count
   void addToBasket(Product product) async {
     final userId = await getUserId();
     if (userId != null) {
       try {
-        // 1. Calls your existing "addToBasket" endpoint
         await apiService.addToBasket(userId, product.productId, 1);
-
-        // 2. Refresh the basket count from the backend
         await refreshBasketCount();
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${product.productName} added to basket!')),
@@ -102,18 +86,12 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
     }
   }
 
-  // Buy now (adds item to basket on the backend), then refresh and navigate
   void buyNow(Product product) async {
     final userId = await getUserId();
     if (userId != null) {
       try {
-        // 1. Calls existing "buyNow" endpoint (which now increments quantity if it exists)
         await apiService.buyNow(userId, product.productId, 1);
-
-        // 2. Refresh the basket count
         await refreshBasketCount();
-
-        // 3. Navigate to basket summary
         if (mounted) {
           Navigator.push(
             context,
@@ -153,7 +131,7 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final sellerId = userProvider.getUser?.id ?? 0;  // Fetch seller ID
+    final sellerId = userProvider.getUser?.id ?? 0;
 
     return DefaultTabController(
       length: 2,
@@ -163,82 +141,82 @@ class MarketplaceScreenState extends State<MarketplaceScreen> {
             indicatorColor: Colors.green,
             labelColor: Colors.black,
             tabs: [
-              Tab(text: 'Marketplace'), // Tab for Marketplace
-              Tab(text: 'My Marketplace'), // Tab for My Marketplace
+              Tab(text: 'Marketplace'),
+              Tab(text: 'My Marketplace'),
             ],
           ),
           centerTitle: true,
           actions: [
             PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert), // Three dots icon
-            onSelected: (String choice) {
-              if (choice == 'Basket') {
-                navigateToBasketSummary();
-              } else if (choice == 'Order History') {
-                navigateToOrderHistory();
-              }
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'Basket',
-                child: Row(
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        const Icon(Icons.shopping_basket),
-                        if (basketCount > 0)
-                          Positioned(
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
-                              child: Text(
-                                '$basketCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+              icon: const Icon(Icons.more_vert),
+              onSelected: (String choice) {
+                if (choice == 'Basket') {
+                  navigateToBasketSummary();
+                } else if (choice == 'Order History') {
+                  navigateToOrderHistory();
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'Basket',
+                  child: Row(
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Icon(Icons.shopping_basket),
+                          if (basketCount > 0)
+                            Positioned(
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                textAlign: TextAlign.center,
+                                constraints: const BoxConstraints(minWidth: 15, minHeight: 15),
+                                child: Text(
+                                  '$basketCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(width: 8),
-                    const Text('Basket'),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('Basket'),
+                    ],
+                  ),
                 ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'Order History',
-                child: ListTile(
-                  leading: Icon(Icons.history),
-                  title: Text('Order History'),
+                const PopupMenuItem<String>(
+                  value: 'Order History',
+                  child: ListTile(
+                    leading: Icon(Icons.history),
+                    title: Text('Order History'),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
+        body: TabBarView(
+          children: [
+            MarketplaceTab(
+              apiService: apiService,
+              addToBasket: addToBasket,
+              buyNow: buyNow,
+            ),
+            MyMarketplaceScreen(sellerId: sellerId),
+          ],
+        ),
       ),
-      body: TabBarView(
-        children: [
-          MarketplaceTab(
-            apiService: apiService,
-            addToBasket: addToBasket,
-            buyNow: buyNow,
-          ),
-          MyMarketplaceScreen(sellerId: sellerId),
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 }
 
 class MarketplaceTab extends StatelessWidget {
@@ -302,6 +280,9 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✦ KEY CHANGE: detect out-of-stock
+    final bool isOutOfStock = product.productStock <= 0;
+
     return Card(
       elevation: 3,
       margin: const EdgeInsets.all(4),
@@ -311,7 +292,7 @@ class ProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Product Photo (square)
+          // Product Photo
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -396,36 +377,57 @@ class ProductCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => addToBasket(product),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+
+                // ✦ KEY CHANGE: show Out of Stock button OR normal buttons
+                if (isOutOfStock)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: null, // disabled — cannot be pressed
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.add_shopping_cart, size: 16),
+                      ),
+                      child: const Text(
+                        'Out of Stock',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => buyNow(product),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => addToBasket(product),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
+                          child: const Icon(Icons.add_shopping_cart, size: 16),
                         ),
-                        child: const Text('Buy', style: TextStyle(fontSize: 12)),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => buyNow(product),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Buy', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
