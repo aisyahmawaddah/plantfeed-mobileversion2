@@ -53,6 +53,7 @@ class OrderItem {
       'productName': product.productName,
       'quantity': quantity,
       'productPrice': product.productPrice.toStringAsFixed(2),
+      'productPhoto': product.productPhoto, 
     };
   }
 }

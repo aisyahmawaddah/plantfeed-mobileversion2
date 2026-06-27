@@ -56,9 +56,7 @@ class Product {
           0.0,
       productStock: json['productStock'] ?? json['stock'] ?? 0,
       productQty: json['productQty'] ?? json['productqty'], 
-      productPhoto: json['productPhoto'] != null
-          ? '${Config.apiUrl}${json['productPhoto'] ?? json['photo']}'
-          : null,
+      productPhoto: _buildPhotoUrl(json['productPhoto'] ?? json['photo']),
       productRating: json['productRating'] ?? json['rating'] ?? 0,
       productSold: json['productSold'] ?? json['sold'] ?? 0,
       timePosted:
@@ -97,6 +95,14 @@ class Product {
   String get stockStatus => productStock > 0 ? 'In Stock' : 'Out of Stock';
 
   String get formattedTimePosted => '${timePosted.toLocal()}';
+
+  static String? _buildPhotoUrl(String? path) {
+  if (path == null || path.isEmpty) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path; // already a full URL, don't prepend base
+  }
+  return '${Config.apiUrl}$path';
+}
 }
 
 // Order Model
