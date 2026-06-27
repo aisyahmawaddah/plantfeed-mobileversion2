@@ -8,13 +8,13 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 class InvoiceScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> orders; // Updated to accept a list of orders
+  final List<Map<String, dynamic>> orders;
 
   const InvoiceScreen({Key? key, required this.orders}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('InvoiceScreen received orders: $orders'); // Verify received orders list
+    debugPrint('InvoiceScreen received orders: $orders');
 
     if (orders.isEmpty) {
       return Scaffold(
@@ -26,16 +26,27 @@ class InvoiceScreen extends StatelessWidget {
       );
     }
 
-    // Assuming all orders have the same transaction code and seller
     final transactionCode = orders.first['transaction_code'] ?? 'N/A';
-    final shippingCost = double.tryParse(orders.first['order_info']?['shipping']?.toString() ?? '0') ?? 0.0;
-    final total = double.tryParse(orders.first['order_info']?['total']?.toString() ?? '0') ?? 0.0;
 
-    // Create a list of items from all orders
+    // Build items list from this group (already per-seller)
     final List<Map<String, dynamic>> items = orders.map((order) {
       final item = order['item'] as Map<String, dynamic>? ?? {};
       return item;
     }).toList();
+
+    // ✦ FIX: compute shipping and total from THIS group's items only,
+    //   not from order_info which holds the grand total across all sellers.
+    //   Backend charges RM5 per quantity per seller.
+    double itemsSubtotal = 0.0;
+    int totalQty = 0;
+    for (final item in items) {
+      final price = double.tryParse(item['productPrice']?.toString() ?? '0') ?? 0.0;
+      final qty = int.tryParse(item['quantity']?.toString() ?? '0') ?? 0;
+      itemsSubtotal += price * qty;
+      totalQty += qty;
+    }
+    final double shippingCost = totalQty * 5.0; // RM5 per quantity
+    final double total = itemsSubtotal + shippingCost;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,7 +62,7 @@ class InvoiceScreen extends StatelessWidget {
             Center(
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     "IGROW Invoice",
                     style: TextStyle(
                       fontSize: 28,
@@ -72,13 +83,11 @@ class InvoiceScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Divider(color: Colors.grey[400], thickness: 1),
             const SizedBox(height: 16),
-            // Transaction ID
             Text(
               "Transaction ID: $transactionCode",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
-            // Items Header
             const Text(
               "Items",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
@@ -95,10 +104,6 @@ class InvoiceScreen extends StatelessWidget {
                         final productQty = item['quantity'] ?? 0;
                         final productPrice = item['productPrice'] ?? '0.00';
 
-                        // Debugging prints
-                        debugPrint(
-                            "Item $index: productName = $productName, productQty = $productQty, productPrice = $productPrice");
-
                         return Card(
                           elevation: 1,
                           margin: const EdgeInsets.symmetric(vertical: 4),
@@ -107,7 +112,6 @@ class InvoiceScreen extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Product Details
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -119,7 +123,6 @@ class InvoiceScreen extends StatelessWidget {
                                     Text("Qty: $productQty"),
                                   ],
                                 ),
-                                // Product Price
                                 Text(
                                   "RM$productPrice",
                                   style: const TextStyle(
@@ -136,7 +139,7 @@ class InvoiceScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Divider(color: Colors.grey[400], thickness: 1),
             const SizedBox(height: 8),
-            // Shipping Cost
+            // ✦ Now shows only THIS seller's shipping and total
             Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -144,7 +147,6 @@ class InvoiceScreen extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-            // Total Price
             Align(
               alignment: Alignment.centerRight,
               child: Text(
@@ -154,25 +156,19 @@ class InvoiceScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Back Button
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Go back to the previous screen
-                  },
+                  onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey, // Background color for the Back button
+                    backgroundColor: Colors.grey,
                   ),
                   child: const Text('Back'),
                 ),
-                // Save Invoice Button
                 ElevatedButton(
                   onPressed: () {
-                    _createPdf(
-                        context, transactionCode, shippingCost, total, items);
+                    _createPdf(context, transactionCode, shippingCost, total, items);
                   },
                   child: const Text('Save Invoice'),
                 ),
@@ -184,16 +180,14 @@ class InvoiceScreen extends StatelessWidget {
     );
   }
 
-  // Function to create and print/save PDF
-  void _createPdf(BuildContext context, String transactionCode, double shippingCost,
-      double total, List<Map<String, dynamic>> items) async {
-    // Show a loading dialog
+  void _createPdf(BuildContext context, String transactionCode,
+      double shippingCost, double total, List<Map<String, dynamic>> items) async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Generating PDF'),
-        content: const Column(
+      builder: (context) => const AlertDialog(
+        title: Text('Generating PDF'),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
@@ -206,7 +200,6 @@ class InvoiceScreen extends StatelessWidget {
 
     final pdf = pw.Document();
 
-    // Add a page to the PDF document
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
@@ -215,8 +208,8 @@ class InvoiceScreen extends StatelessWidget {
             children: [
               pw.Text(
                 "IGROW Invoice",
-                style:
-                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                    fontSize: 24, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 20),
               pw.Text("Universiti Teknologi Malaysia",
@@ -233,8 +226,6 @@ class InvoiceScreen extends StatelessWidget {
                   style: pw.TextStyle(
                       fontWeight: pw.FontWeight.bold, fontSize: 18)),
               pw.SizedBox(height: 10),
-
-              // Items Table
               pw.Table.fromTextArray(
                 headers: ['Product Name', 'Quantity', 'Price'],
                 data: items.map((item) {
@@ -244,7 +235,6 @@ class InvoiceScreen extends StatelessWidget {
                   return [productName, productQty.toString(), "RM$productPrice"];
                 }).toList(),
               ),
-
               pw.SizedBox(height: 20),
               pw.Divider(),
               pw.SizedBox(height: 10),
@@ -259,12 +249,10 @@ class InvoiceScreen extends StatelessWidget {
       ),
     );
 
-    // Print the PDF and close the loading dialog
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
     );
 
-    // Dismiss the loading dialog
     Navigator.of(context).pop();
   }
 }
